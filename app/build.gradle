@@ -1,0 +1,165 @@
+plugins {
+    id 'com.android.application'
+}
+
+dependencies {
+
+    // Modules
+    // Compile
+    implementation 'androidx.multidex:multidex:2.0.0'
+    implementation 'com.squareup:otto:1.3.8'
+    implementation "com.squareup.okhttp:okhttp:$okhttp_version"
+    implementation "com.google.code.gson:gson:$gson_version"
+    implementation "com.jakewharton.timber:timber:$timber_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    implementation "androidx.legacy:legacy-support-v4:$support_v4_version"
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.material:material:$material_version"
+
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_extensions_version"
+    implementation 'androidx.navigation:navigation-fragment:2.2.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+
+    implementation("com.dji:dji-sdk:$dji_sdk_version", {
+
+        exclude module: 'library-anti-distortion'
+        //exclude module: 'fly-safe-database'
+    })
+    compileOnly "com.dji:dji-sdk-provided:$dji_sdk_version"
+
+    // Test
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:1.10.19'
+    testImplementation 'com.google.truth:truth:0.31'
+    testImplementation 'javax.inject:javax.inject:1'
+}
+
+ext {
+    VERSION_MAJOR = 1
+    VERSION_MINOR = 0
+    VERSION_BUILD = 0
+    // DO NOT CHANGE VERSION_BUILD, as it will we changed by build server
+
+    PUBLISH_VERSION_CODE = computeVersionCode(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD)
+    PUBLISH_VERSION = generateVersionName(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD)
+}
+
+def DJI_SDK_KEY = DJIMC_DJI_SDK_KEY ?: "Define DJIMC_DJI_SDK_KEY in gradle.properties"
+
+android {
+
+    compileSdkVersion app_compileSdkVersion
+
+    defaultConfig {
+        applicationId 'com.example.ugcssample'
+        minSdkVersion app_minSdkVersion
+        targetSdkVersion app_targetSdkVersion
+
+        versionCode PUBLISH_VERSION_CODE
+        versionName PUBLISH_VERSION
+
+        manifestPlaceholders = [djimc_dji_sdk_key: DJI_SDK_KEY]
+        buildConfigField "boolean", "WRITE_LOG_FILE", "true"
+        buildConfigField "int", "LOG_FILE_LEVEL", "$logLevelDebug"
+        buildConfigField "int", "VERSION_MAJOR", "$VERSION_MAJOR"
+        buildConfigField "int", "VERSION_MINOR", "$VERSION_MINOR"
+        buildConfigField "String", "VERSION_BUILD", "\"$VERSION_BUILD\""
+
+        ndk{
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86_64"
+        }
+
+        multiDexEnabled true
+    }
+
+    compileOptions {
+        sourceCompatibility java_version
+        targetCompatibility java_version
+    }
+
+    packagingOptions{
+        doNotStrip "*/*/libdjivideo.so"
+        doNotStrip "*/*/libSDKRelativeJNI.so"
+        doNotStrip "*/*/libFlyForbid.so"
+        doNotStrip "*/*/libduml_vision_bokeh.so"
+        doNotStrip "*/*/libyuv2.so"
+        doNotStrip "*/*/libGroudStation.so"
+        doNotStrip "*/*/libFRCorkscrew.so"
+        doNotStrip "*/*/libUpgradeVerify.so"
+        doNotStrip "*/*/libFR.so"
+        doNotStrip "*/*/libDJIFlySafeCore.so"
+        doNotStrip "*/*/libdjifs_jni.so"
+        doNotStrip "*/*/libsfjni.so"
+        doNotStrip "*/*/libDJICommonJNI.so"
+        doNotStrip "*/*/libDJICSDKCommon.so"
+        doNotStrip "*/*/libDJIUpgradeCore.so"
+        doNotStrip "*/*/libDJIUpgradeJNI.so"
+        doNotStrip "*/*/libDJIWaypointV2Core.so"
+        doNotStrip "*/*/libAMapSDK_MAP_v6_9_2.so"
+        doNotStrip "*/*/libDJIMOP.so"
+        doNotStrip "*/*/libDJISDKLOGJNI.so"
+
+        pickFirst 'lib/*/libstlport_shared.so'
+        pickFirst 'lib/*/libRoadLineRebuildAPI.so'
+        pickFirst 'lib/*/libGNaviUtils.so'
+        pickFirst 'lib/*/libGNaviMapex.so'
+        pickFirst 'lib/*/libGNaviData.so'
+        pickFirst 'lib/*/libGNaviMap.so'
+        pickFirst 'lib/*/libGNaviSearch.so'
+        pickFirst 'lib/*/libDJIFlySafeCore.so'
+        pickFirst 'lib/*/libdjifs_jni.so'
+        pickFirst 'lib/*/libsfjni.so'
+
+        exclude 'META-INF/rxjava.properties'
+        exclude 'META-INF/rxjava-computation-expressions.properties'
+        exclude 'assets/location_map_gps_locked.png'
+        exclude 'assets/location_map_gps_3d.png'
+    }
+
+    testOptions {
+        unitTests.all {
+            // All the usual Gradle options.
+            jvmArgs '-XX:MaxPermSize=256m'
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile getAndroidAppsKeystoreFile()
+            storePassword getAndroidAppsKeystorePassword()
+            keyAlias getAndroidAppsKeyAlias()
+            keyPassword getAndroidAppsKeyPassword()
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def file = output.outputFile
+            if (file != null && file.name.endsWith('.apk')) {
+                def buildType = variant.buildType.getName()
+                def versionName = defaultConfig.versionName
+                outputFileName = "../dji-mc-${buildType}-${versionName}.apk"
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            resValue "string", "app_title", "UgCS for DJI Dev"
+        }
+
+        release {
+            signingConfig signingConfigs.release
+            resValue "string", "app_title", "UgCS for DJI"
+        }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+}
