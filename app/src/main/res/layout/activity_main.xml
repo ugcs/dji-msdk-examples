@@ -14,24 +14,49 @@
         android:background="@color/black" />
 
     <RelativeLayout
-        android:id="@+id/main_layout_container"
+        android:id="@+id/main_video_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/main_indicators_fragment_extra_distance">
+        android:layout_below="@id/main_indicators_fragment_extra_distance"
+        android:elevation="1dp">
 
-        <RelativeLayout
-            android:id="@+id/fpv_fullscreen_fragment_container"
+        <com.example.ugcssample.fragment.VideoViewFragment
+            android:id="@+id/video_view_primary_video_feed"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
 
     </RelativeLayout>
-    <Button
-        android:id="@+id/btn_simulator"
-        android:text="Start Simulator"
-        android:layout_height="70dp"
-        android:enabled="false"
-        android:layout_width="130dp"/>
 
+    <LinearLayout
+        android:id="@+id/main_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/main_indicators_fragment_extra_distance"
+        android:elevation="1000dp">
+        <Button
+            android:id="@+id/btn_simulator"
+            android:text="Start Simulator"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
 
+        <Button
+            android:id="@+id/btn_upload_mission"
+            android:text="Upload mission"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
+
+        <Button
+            android:id="@+id/btn_start_mission"
+            android:text="Start mission"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
+    </LinearLayout>
 
 </RelativeLayout>
