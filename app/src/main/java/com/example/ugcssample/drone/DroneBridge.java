@@ -23,4 +23,6 @@ public interface DroneBridge {
     void startMission();
 
     void onDestroy();
+
+    MyFlightControllerUpdateCallback getTelemetry();
 }

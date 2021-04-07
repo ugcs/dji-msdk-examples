@@ -43,7 +43,7 @@ public final class PtMissionUtils {
 
     public static Mission ascentMission(double lat, double lng, double yaw, double speed) {
 
-        double estimatedHeight = 35d;
+        double estimatedHeight = 50d;
         double safeAlt = estimatedHeight + 10d;
         double firstAlt = estimatedHeight / 3;
         Mission m = new Mission();

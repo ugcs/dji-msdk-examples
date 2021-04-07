@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ import com.example.ugcssample.utils.ArrayUtils;
 import com.example.ugcssample.utils.PermissionUtils;
 
 import java.util.List;
+import java.util.Locale;
 
 import dji.sdk.camera.VideoFeeder;
 import timber.log.Timber;
@@ -37,12 +39,18 @@ public class MainActivity extends AppCompatActivity {
 
     static {
         EVENT_FILTER.addAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
+        EVENT_FILTER.addAction(DroneBridgeImpl.ON_MISSION_UPLOADED);
+        EVENT_FILTER.addAction(DroneBridgeImpl.ON_TELEMETRY_UPDATED);
     }
     private Intent sIntent;
     private ServiceConnection sConn;
     private Button btnSimulator;
     private Button uploadMission;
     private Button startMission;
+    private TextView latitude;
+    private TextView longitude;
+    private TextView altitude;
+    private TextView altitudeft;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -65,6 +73,27 @@ public class MainActivity extends AppCompatActivity {
 
             if (DroneBridgeImpl.ON_MISSION_UPLOADED.equals(action)) {
                 startMission.setEnabled(true);
+            }
+
+            if (DroneBridgeImpl.ON_TELEMETRY_UPDATED.equals(action)) {
+                if (appMainService == null) {
+                    latitude.setText("Latitude: error");
+                    longitude.setText("Longitude: error");
+                    altitude.setText("Altitude: error");
+                    altitudeft.setText("Altitude FT: error");
+
+                } else {
+                    latitude.setText(String.format(Locale.US, "Latitude: %s", appMainService.getLatitude()));
+                    longitude.setText(String.format(Locale.US, "Longitude: %s", appMainService.getLongitude()));
+                    Float alt = appMainService.getAltitude();
+                    if (alt == null || Double.isNaN(alt)) {
+                        altitude.setText("Altitude M: null");
+                        altitudeft.setText("Altitude FT: null");
+                    } else {
+                        altitude.setText(String.format(Locale.US, "Altitude M: %s", alt));
+                        altitudeft.setText(String.format(Locale.US, "Altitude FT: %s", alt * 3.28084));
+                    }
+                }
             }
         }
     };
@@ -97,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
         startMission.setOnClickListener(v -> {
             appMainService.startMission();
         });
+        latitude = (TextView) findViewById(R.id.latitude);
+        longitude = (TextView) findViewById(R.id.longitude);
+        altitude = (TextView) findViewById(R.id.altitude);
+        altitudeft = (TextView) findViewById(R.id.altitudeft);
 
     }
 

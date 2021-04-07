@@ -58,6 +58,50 @@
             android:enabled="false"
             android:layout_marginEnd="5dp"
             android:layout_width="130dp"/>
+        <LinearLayout
+            android:id="@+id/telemetry"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_below="@id/main_indicators_fragment_extra_distance"
+            android:elevation="1000dp">
+            <TextView
+                android:id="@+id/latitude"
+                android:text="Latitude:"
+                android:layout_height="25dp"
+                android:enabled="false"
+                android:textColor="@color/black"
+                android:background="@color/white"
+                android:layout_marginEnd="5dp"
+                android:layout_width="250dp"/>
+            <TextView
+                android:id="@+id/longitude"
+                android:text="Longitude:"
+                android:layout_height="25dp"
+                android:textColor="@color/black"
+                android:background="@color/white"
+                android:enabled="false"
+                android:layout_marginEnd="5dp"
+                android:layout_width="250dp"/>
+            <TextView
+                android:id="@+id/altitude"
+                android:text="Altitude M:"
+                android:textColor="@color/black"
+                android:background="@color/white"
+                android:layout_height="25dp"
+                android:enabled="false"
+                android:layout_marginEnd="5dp"
+                android:layout_width="250dp"/>
+            <TextView
+                android:id="@+id/altitudeft"
+                android:text="Altitude FT:"
+                android:textColor="@color/black"
+                android:background="@color/white"
+                android:layout_height="25dp"
+                android:enabled="false"
+                android:layout_marginEnd="5dp"
+                android:layout_width="250dp"/>
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

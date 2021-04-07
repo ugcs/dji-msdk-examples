@@ -48,7 +48,7 @@ import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 import timber.log.Timber;
 
-public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyMissionGlobalEventListener.MainController {
+public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyMissionGlobalEventListener.MainController, MyFlightControllerUpdateCallback.Telemetry {
 
     private static final double BASE_LATITUDE = 22;
     private static final double BASE_LONGITUDE = 113;
@@ -57,6 +57,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyM
 
     public static final String ON_DRONE_CONNECTED = "ON_DRONE_CONNECTED";
     public static final String ON_MISSION_UPLOADED = "ON_MISSION_UPLOADED";
+    public static final String ON_TELEMETRY_UPDATED = "ON_TELEMETRY_UPDATED";
 
     private final FlightControllerKey serialNumberKey = FlightControllerKey.create(FlightControllerKey.SERIAL_NUMBER);
     private final ProductKey connectionKey = ProductKey.create(ProductKey.CONNECTION);
@@ -84,7 +85,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyM
 
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         myMissionGlobalEventListener = new MyMissionGlobalEventListener(this);
-        flightControllerUpdateCallback = new MyFlightControllerUpdateCallback(lbm);
+        flightControllerUpdateCallback = new MyFlightControllerUpdateCallback(this, lbm);
     }
 
     @Override
@@ -497,5 +498,17 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyM
     @Override
     public void onMissionExecutionFinish() {
 
+    }
+
+    @Override
+    public MyFlightControllerUpdateCallback getTelemetry() {
+        return flightControllerUpdateCallback;
+    }
+
+    @Override
+    public void onUpdate() {
+        Intent intent = new Intent();
+        intent.setAction(DroneBridgeImpl.ON_TELEMETRY_UPDATED);
+        LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
     }
 }

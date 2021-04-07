@@ -73,6 +73,21 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     }
 
     @Override
+    public Double getLatitude() {
+        return droneBridge.getTelemetry().latitude;
+    }
+
+    @Override
+    public Double getLongitude() {
+        return droneBridge.getTelemetry().longitude;
+    }
+
+    @Override
+    public Float getAltitude() {
+        return droneBridge.getTelemetry().altitude;
+    }
+
+    @Override
     public void uploadAscendMission() {
         droneBridge.uploadMission();
     }

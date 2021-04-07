@@ -25,6 +25,11 @@ public class MyFlightControllerUpdateCallback extends GenericUpdateCallback impl
     public volatile Double latitude = null;
     public volatile Double longitude = null;
     public volatile Float altitude = null;
+
+    public interface Telemetry {
+        void onUpdate();
+    }
+
     private static final String[] KEYS = {
             // Position
             FlightControllerKey.AIRCRAFT_LOCATION_LATITUDE,
@@ -43,6 +48,9 @@ public class MyFlightControllerUpdateCallback extends GenericUpdateCallback impl
             Integer.class
     };
 
+
+
+    private final Telemetry telemetry;
     private final DjiSdkKeyGroup flightControlKeyGroup;
     private ScheduledFuture<?> gpsUpdateFuture;
     private boolean firstTime = true;
@@ -51,8 +59,9 @@ public class MyFlightControllerUpdateCallback extends GenericUpdateCallback impl
     private FlightMode oldMode = FlightMode.UNKNOWN;
     private String oldModeString = null;
 
-    public MyFlightControllerUpdateCallback(LocalBroadcastManager lbm) {
+    public MyFlightControllerUpdateCallback(Telemetry tlm,LocalBroadcastManager lbm) {
         super(lbm);
+        telemetry = tlm;
         flightControlKeyGroup = new DjiSdkKeyGroup(KEYS, EXPECTED_TYPES, this) {
             @Override
             public DJIKey create(String key) {
@@ -100,18 +109,21 @@ public class MyFlightControllerUpdateCallback extends GenericUpdateCallback impl
                 latitude = lat;
             }
             Timber.i("onValueChange lat %s", lat);
+            telemetry.onUpdate();
         } else if (FlightControllerKey.AIRCRAFT_LOCATION_LONGITUDE.equals(key)) {
             Double lng = (Double)newValue;
             if (!Double.isNaN(lng) && !lng.equals(longitude)) {
                 longitude = lng;
             }
             Timber.i("onValueChange lng %s", lng);
+            telemetry.onUpdate();
         } else if (FlightControllerKey.ALTITUDE.equals(key)) {
             Float alt = (float)newValue;
             if (!Float.isNaN(alt) && !alt.equals(altitude)) {
                 altitude = alt;
             }
             Timber.i("onValueChange alt %s", alt);
+            telemetry.onUpdate();
         } else if (FlightControllerKey.GPS_SIGNAL_LEVEL.equals(key)) {
 
         } else if (FlightControllerKey.SATELLITE_COUNT.equals(key)) {

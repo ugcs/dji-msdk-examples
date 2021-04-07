@@ -5,4 +5,7 @@ public interface DjiAppMainService {
     void startSimulator();
     void uploadAscendMission();
     void startMission();
+    Double getLatitude();
+    Double getLongitude();
+    Float getAltitude();
 }
