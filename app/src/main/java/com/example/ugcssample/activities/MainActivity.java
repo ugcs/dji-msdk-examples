@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private Intent sIntent;
     private ServiceConnection sConn;
     private Button btnSimulator;
+    private Button uploadMission;
+    private Button startMission;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -55,7 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
             if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
                 btnSimulator.setEnabled(true);
+                uploadMission.setEnabled(true);
+                primaryVideoFeedView.setVisibility(View.VISIBLE);
                 primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
+            }
+
+            if (DroneBridgeImpl.ON_MISSION_UPLOADED.equals(action)) {
+                startMission.setEnabled(true);
             }
         }
     };
@@ -80,6 +89,15 @@ public class MainActivity extends AppCompatActivity {
         btnSimulator.setOnClickListener(v -> {
             appMainService.startSimulator();
         });
+        uploadMission = (Button) findViewById(R.id.btn_upload_mission);
+        uploadMission.setOnClickListener(v -> {
+            appMainService.uploadAscendMission();
+        });
+        startMission = (Button) findViewById(R.id.btn_start_mission);
+        startMission.setOnClickListener(v -> {
+            appMainService.startMission();
+        });
+
     }
 
     protected void onMainServiceConnected(ComponentName name, IBinder binder) {

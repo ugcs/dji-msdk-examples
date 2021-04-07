@@ -12,7 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.ugcssample.drone.mission.DjiMissionAndHome;
+import com.example.ugcssample.drone.mission.DjiMissionSpecificUtils;
+import com.example.ugcssample.model.Mission;
 import com.example.ugcssample.utils.PermissionCheckResult;
+import com.example.ugcssample.utils.PtMissionUtils;
 import com.example.ugcssample.utils.ToastUtils;
 
 import java.util.concurrent.ScheduledFuture;
@@ -21,6 +25,9 @@ import java.util.concurrent.TimeUnit;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
+import dji.common.mission.waypoint.WaypointMission;
+import dji.common.mission.waypoint.WaypointMissionState;
+import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
 import dji.keysdk.FlightControllerKey;
@@ -34,12 +41,14 @@ import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.basestation.BaseStation;
 import dji.sdk.flightcontroller.FlightAssistant;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.mission.MissionControl;
+import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 import timber.log.Timber;
 
-public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
+public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge, MyMissionGlobalEventListener.MainController {
 
     private static final double BASE_LATITUDE = 22;
     private static final double BASE_LONGITUDE = 113;
@@ -47,12 +56,15 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     private static final int SATELLITE_COUNT = 10;
 
     public static final String ON_DRONE_CONNECTED = "ON_DRONE_CONNECTED";
+    public static final String ON_MISSION_UPLOADED = "ON_MISSION_UPLOADED";
 
     private final FlightControllerKey serialNumberKey = FlightControllerKey.create(FlightControllerKey.SERIAL_NUMBER);
     private final ProductKey connectionKey = ProductKey.create(ProductKey.CONNECTION);
 
     private final KeyListener connectionKeyListener = (oldValue, newValue) -> onConnectionChanged(newValue);
     private PermissionCheckResult permissionCheckResult;
+    private MyFlightControllerUpdateCallback flightControllerUpdateCallback;
+    private MyMissionGlobalEventListener myMissionGlobalEventListener;
     private Aircraft aircraft = null;
     private BaseStation baseStation = null;
 
@@ -71,6 +83,8 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
        //         = new MySimulatorUpdateCallbackAndController(vehicleModelContainer, lbm);
 
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        myMissionGlobalEventListener = new MyMissionGlobalEventListener(this);
+        flightControllerUpdateCallback = new MyFlightControllerUpdateCallback(lbm);
     }
 
     @Override
@@ -198,22 +212,27 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     private void onProductConnect(BaseProduct baseProduct) {
         Aircraft af = (Aircraft)baseProduct;
-        af.getFlightController().getSerialNumber(new CommonCallbacks.CompletionCallbackWith<String>() {
-            @Override
-            public void onSuccess(String s) {
-                if (droneInitFuture != null) {
-                    droneInitFuture.cancel(false);
-                    droneInitFuture = null;
-                }
-                droneInitFuture = WORKER.schedule(() ->
+        if (af.getFlightController() == null) {
+            ToastUtils.setResultToToast("Unable to get flight controller");
+        } else {
+            af.getFlightController().getSerialNumber(new CommonCallbacks.CompletionCallbackWith<String>() {
+                @Override
+                public void onSuccess(String s) {
+                    if (droneInitFuture != null) {
+                        droneInitFuture.cancel(false);
+                        droneInitFuture = null;
+                    }
+                    droneInitFuture = WORKER.schedule(() ->
                             initDrone(s), 2, TimeUnit.SECONDS);
-            }
-            @Override
-            public void onFailure(DJIError djiError) {
-                ToastUtils.setResultToToast(String.format("getSerialNumber method - error: %s", djiError.getDescription()));
-                Timber.i("getSerialNumber method - error: %s", djiError.getDescription());
-            }
-        });
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+                    ToastUtils.setResultToToast(String.format("getSerialNumber method - error: %s", djiError.getDescription()));
+                    Timber.i("getSerialNumber method - error: %s", djiError.getDescription());
+                }
+            });
+        }
         Timber.d("onProductConnect");
     }
 
@@ -262,7 +281,6 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         }
     }
 
-    // ProductKey.COMPONENT_KEY - Not works in SDK 4.3.2, so this method is invoked vis baseProductListener
     private void onComponentChanged(final BaseProduct.ComponentKey key, final BaseComponent oldComponent,
                                     final BaseComponent newComponent) {
         WORKER.submit(() -> {
@@ -313,6 +331,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         Intent intent = new Intent();
         intent.setAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
         LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
+        flightControllerUpdateCallback.setUpKeyListeners();
     }
     private void disconnectDrone() {
         // Drone is disconnected
@@ -382,5 +401,101 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 }
             });
         });
+    }
+
+    @Override
+    public void uploadMission() {
+        if (flightControllerUpdateCallback.latitude == null
+                || flightControllerUpdateCallback.longitude == null
+                || flightControllerUpdateCallback.altitude == null) {
+            String result =  "Wrong coordinates";
+            Timber.i(result);
+            ToastUtils.setResultToToast(result);
+            return;
+        }
+        Mission m = PtMissionUtils.ascentMission(flightControllerUpdateCallback.latitude , flightControllerUpdateCallback.longitude, 0, 1.2192);
+        final DjiMissionAndHome gsTask =
+                DjiMissionSpecificUtils.generateDjiTaskForMission(new MsgIdAndSession(), m, true);
+
+        WaypointMission waypointMission = gsTask.waypointMission;
+        WaypointMissionOperator waypointMissionOperator =
+                MissionControl.getInstance().getWaypointMissionOperator();
+        DJIError e = waypointMissionOperator.loadMission(waypointMission);
+        // e = null;
+        WaypointMissionState state = waypointMissionOperator.getCurrentState();
+        if (e != null) {
+            String result = String.format("Mission Upload - WaypointMissionOperator - loadMission FAILED" +
+                            " (state = %s) as %s",
+                    state.getName(), e.getDescription());
+            Timber.i(result);
+            ToastUtils.setResultToToast(result);
+        } else {
+            String result =  String.format("Mission Upload - WaypointMissionOperator - uploadMission... " +
+                            "(state = %s)",
+                    state.getName());
+            Timber.i(result);
+            ToastUtils.setResultToToast(result);
+            waypointMissionOperator.removeListener(myMissionGlobalEventListener);
+            waypointMissionOperator.addListener(myMissionGlobalEventListener);
+            waypointMissionOperator.uploadMission(myMissionGlobalEventListener);
+        }
+    }
+
+    @Override
+    public void startMission() {
+        WaypointMissionOperator waypointMissionOperator =
+                MissionControl.getInstance().getWaypointMissionOperator();
+        waypointMissionOperator.startMission(djiError -> {
+            if (djiError != null) {
+                String result =  djiError.getDescription();
+                Timber.i(result);
+                ToastUtils.setResultToToast(result);
+            } else {
+                String result =  "Mission started. Good luck!";
+                Timber.i(result);
+                ToastUtils.setResultToToast(result);
+            }
+        });
+    }
+
+    @Override
+    public void onMissionUploadResult(DJIError djiError) {
+        if (djiError != null) {
+            String result =  djiError.getDescription();
+            Timber.i(result);
+            ToastUtils.setResultToToast(result);
+        } else {
+            String result =  "Success mission upload";
+            Timber.i(result);
+            ToastUtils.setResultToToast(result);
+            Intent intent = new Intent();
+            intent.setAction(DroneBridgeImpl.ON_MISSION_UPLOADED);
+            LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
+        }
+    }
+
+    @Override
+    public void onMissionUploadUpdate(WaypointMissionUploadEvent waypointMissionUploadEvent) {
+
+    }
+
+    @Override
+    public void onMissionExecutionStart() {
+
+    }
+
+    @Override
+    public void onMissionWpReached(int reachedWpIndex) {
+
+    }
+
+    @Override
+    public void onMissionWpMovingTo(int movingToWpIndex) {
+
+    }
+
+    @Override
+    public void onMissionExecutionFinish() {
+
     }
 }

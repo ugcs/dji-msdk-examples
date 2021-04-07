@@ -9,7 +9,19 @@ import androidx.annotation.Nullable;
 
 import com.example.ugcssample.drone.DroneBridge;
 import com.example.ugcssample.drone.DroneBridgeImpl;
+import com.example.ugcssample.drone.MsgIdAndSession;
+import com.example.ugcssample.drone.MyMissionGlobalEventListener;
+import com.example.ugcssample.drone.mission.DjiMissionAndHome;
+import com.example.ugcssample.drone.mission.DjiMissionSpecificUtils;
+import com.example.ugcssample.model.Mission;
+import com.example.ugcssample.utils.PtMissionUtils;
+import com.example.ugcssample.utils.ToastUtils;
 
+import dji.common.error.DJIError;
+import dji.common.mission.waypoint.WaypointMission;
+import dji.common.mission.waypoint.WaypointMissionState;
+import dji.sdk.mission.MissionControl;
+import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import timber.log.Timber;
 public class DjiAppMainServiceImpl extends Service implements DjiAppMainService {
 
@@ -53,6 +65,16 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     @Override
     public void startSimulator() {
         droneBridge.startModelSimulator();
+    }
+
+    @Override
+    public void startMission() {
+        droneBridge.startMission();
+    }
+
+    @Override
+    public void uploadAscendMission() {
+        droneBridge.uploadMission();
     }
 
     private DroneBridge newDroneBridge(Context context) {

@@ -24,6 +24,7 @@
             android:id="@+id/video_view_primary_video_feed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="gone"
             android:layout_gravity="center" />
 
     </RelativeLayout>
