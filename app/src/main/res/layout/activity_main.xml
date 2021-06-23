@@ -7,11 +7,14 @@
     android:background="#f0f0f0">
     <!--android:background="#101010"-->
     <!-- android:layout_below="@+id/main_indicators_fragment_container" -->
+
     <FrameLayout
         android:id="@+id/main_indicators_fragment_extra_distance"
         android:layout_width="match_parent"
         android:layout_height="5dp"
-        android:background="@color/black" />
+        android:background="@color/black" >
+
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/main_video_container"
@@ -26,37 +29,69 @@
             android:layout_height="match_parent"
             android:layout_gravity="center" />
 
+        <LinearLayout
+            android:id="@+id/main_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="-5dp"
+            android:elevation="1000dp">
+
+            <Button
+                android:id="@+id/btn_simulator"
+                android:layout_width="130dp"
+                android:layout_height="70dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Start Simulator" />
+
+            <Button
+                android:id="@+id/btn_upload_mission"
+                android:layout_width="130dp"
+                android:layout_height="70dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Upload mission" />
+
+            <Button
+                android:id="@+id/btn_start_mission"
+                android:layout_width="130dp"
+                android:layout_height="70dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Start mission" />
+
+            <Button
+                android:id="@+id/btn_takeoff"
+                android:layout_width="130dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Takeoff" />
+
+            <Button
+                android:id="@+id/btn_land"
+                android:layout_width="130dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Land" />
+
+        </LinearLayout>
+
+        <TextView
+
+            android:id="@+id/mission_debug_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="16dp"
+            android:background="#FFF"
+            android:padding="8dp"
+            android:text="Mission info" />
+
     </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/main_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/main_indicators_fragment_extra_distance"
-        android:elevation="1000dp">
-        <Button
-            android:id="@+id/btn_simulator"
-            android:text="Start Simulator"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
-
-        <Button
-            android:id="@+id/btn_upload_mission"
-            android:text="Upload mission"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
-
-        <Button
-            android:id="@+id/btn_start_mission"
-            android:text="Start mission"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
-    </LinearLayout>
 
 </RelativeLayout>

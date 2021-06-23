@@ -19,4 +19,11 @@ public interface DroneBridge {
     void startModelSimulator();
 
     void onDestroy();
+
+    void takeOff();
+
+    void land();
+
+    void uploadDemoMission();
+    void startMission();
 }

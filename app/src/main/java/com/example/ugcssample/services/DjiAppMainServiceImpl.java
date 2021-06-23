@@ -54,6 +54,23 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     public void startSimulator() {
         droneBridge.startModelSimulator();
     }
+    @Override
+    public void uploadMission() {
+        droneBridge.uploadDemoMission();
+    }
+    @Override
+    public void startMission() {
+        droneBridge.startMission();
+    }
+
+    @Override
+    public void land() {
+        droneBridge.land();
+    }
+    @Override
+    public void takeOff() {
+        droneBridge.takeOff();
+    }
 
     private DroneBridge newDroneBridge(Context context) {
         return new DroneBridgeImpl(context);

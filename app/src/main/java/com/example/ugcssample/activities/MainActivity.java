@@ -9,7 +9,10 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,11 +38,18 @@ public class MainActivity extends AppCompatActivity {
     private static final IntentFilter EVENT_FILTER = new IntentFilter();
 
     static {
-        EVENT_FILTER.addAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
+        for (DroneBridgeImpl.BroadcastActions action : DroneBridgeImpl.BroadcastActions.values()) {
+            EVENT_FILTER.addAction(action.name());
+        }
     }
     private Intent sIntent;
     private ServiceConnection sConn;
     private Button btnSimulator;
+    private Button btnUploadMission;
+    private Button btnStartMission;
+    private Button btnTakeOff;
+    private Button btnLand;
+    private TextView tvMissionDebug;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -49,14 +59,44 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            final String action = intent.getAction();
+            final DroneBridgeImpl.BroadcastActions action = DroneBridgeImpl.BroadcastActions.valueOf(intent.getAction());
             if (action == null)
                 return;
+            switch (action){
+                case ON_SIMULATOR_START:
+                    btnSimulator.setEnabled(false);
+                    btnSimulator.setText("Simulator is \nON");
+                break;
+                case ON_DRONE_CONNECTED:
+                    btnSimulator.setEnabled(true);
+                    btnUploadMission.setEnabled(true);
+                    btnSimulator.setEnabled(true);
+                    btnTakeOff.setEnabled(true);
+                    primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
+                break;
+                case ON_MISSION_STATUS:
+                    String descr = intent.getStringExtra("desc");
+                    int code = intent.getIntExtra("code", 0);
 
-            if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
-                btnSimulator.setEnabled(true);
-                primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
+                    switch (code) {
+                        case 1:
+                            btnStartMission.setEnabled(true);
+                            tvMissionDebug.setText("Mission upload: "+descr);
+                        break;
+                        case 2:
+                            tvMissionDebug.setText("Mission run: "+descr);
+                        break;
+                        case 3:
+                            tvMissionDebug.setText(descr);
+                        break;
+                        default:
+                            tvMissionDebug.setText("Mission error: "+descr);
+                        break;
+
+                    }
+                break;
             }
+
         }
     };
 
@@ -64,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sIntent = new Intent(this, DjiAppMainServiceImpl.class);
         sConn = new ServiceConnection() {
             public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -75,10 +115,33 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.onMainServiceDisconnected();
             }
         };
-        primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
-        btnSimulator = (Button) findViewById(R.id.btn_simulator);
-        btnSimulator.setOnClickListener(v -> {
-            appMainService.startSimulator();
+        tvMissionDebug = findViewById(R.id.mission_debug_tv);
+        primaryVideoFeedView = findViewById(R.id.video_view_primary_video_feed);
+        btnSimulator = findViewById(R.id.btn_simulator);
+        btnSimulator.setOnClickListener(v -> appMainService.startSimulator());
+
+        btnUploadMission = findViewById(R.id.btn_upload_mission);
+        btnUploadMission.setOnClickListener(v -> {
+            btnStartMission.setEnabled(false);
+            appMainService.uploadMission();
+        });
+
+        btnStartMission = findViewById(R.id.btn_start_mission);
+        btnStartMission.setOnClickListener(v -> {
+            appMainService.startMission();
+            btnLand.setEnabled(true);
+        });
+
+        btnTakeOff = findViewById(R.id.btn_takeoff);
+        btnTakeOff.setOnClickListener(v -> {
+            appMainService.takeOff();
+            btnLand.setEnabled(true);
+        });
+
+        btnLand = findViewById(R.id.btn_land);
+        btnLand.setOnClickListener(v -> {
+            appMainService.land();
+            btnTakeOff.setEnabled(true);
         });
     }
 
