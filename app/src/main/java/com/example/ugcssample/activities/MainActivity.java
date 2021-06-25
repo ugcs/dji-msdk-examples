@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnStartMission;
     private Button btnTakeOff;
     private Button btnLand;
+    private Button btnLandDirect;
     private TextView tvMissionDebug;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
@@ -130,18 +131,25 @@ public class MainActivity extends AppCompatActivity {
         btnStartMission.setOnClickListener(v -> {
             appMainService.startMission();
             btnLand.setEnabled(true);
+            btnLandDirect.setEnabled(true);
         });
 
         btnTakeOff = findViewById(R.id.btn_takeoff);
         btnTakeOff.setOnClickListener(v -> {
             appMainService.takeOff();
             btnLand.setEnabled(true);
+            btnLandDirect.setEnabled(true);
         });
 
         btnLand = findViewById(R.id.btn_land);
         btnLand.setOnClickListener(v -> {
-            appMainService.land();
+            appMainService.land(true);
             btnTakeOff.setEnabled(true);
+        });
+        btnLandDirect = findViewById(R.id.btn_land_2);
+        btnLandDirect.setOnClickListener(v -> {
+            appMainService.land(true);
+            btnTakeOff.setEnabled(false);
         });
     }
 

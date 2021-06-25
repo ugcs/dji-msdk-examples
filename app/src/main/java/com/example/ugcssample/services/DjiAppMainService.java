@@ -6,5 +6,5 @@ public interface DjiAppMainService {
     void uploadMission();
     void startMission();
     void takeOff();
-    void land();
+    void land(boolean useKeyInterface);
 }

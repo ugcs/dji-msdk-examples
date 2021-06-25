@@ -22,7 +22,7 @@ public interface DroneBridge {
 
     void takeOff();
 
-    void land();
+    void land(boolean useKeyInterface);
 
     void uploadDemoMission();
     void startMission();

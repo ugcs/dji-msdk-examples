@@ -581,8 +581,20 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     }
 
     @Override
-    public void land() {
-        performAction(LAND_KEY_ACTION_KEY);
+    public void land(boolean useKeyInterface)
+    {
+        if (useKeyInterface) {
+            performAction(LAND_KEY_ACTION_KEY);
+        } else {
+            aircraft.getFlightController().startLanding(djiError -> {
+                if (djiError != null) {
+                    Timber.e(" Landing error %d: %s", djiError.getErrorCode(),
+                            djiError.getDescription());
+                } else {
+                    ToastUtils.setResultToToast("Landing started");
+                }
+            });
+        }
     }
     @Override
     public void uploadDemoMission() {

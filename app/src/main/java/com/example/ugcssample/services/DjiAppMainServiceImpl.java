@@ -64,8 +64,8 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     }
 
     @Override
-    public void land() {
-        droneBridge.land();
+    public void land(boolean useKeyInterface) {
+        droneBridge.land(useKeyInterface);
     }
     @Override
     public void takeOff() {
