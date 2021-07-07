@@ -665,14 +665,26 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     @Override
     public void startMission() {
-        MissionControl.getInstance().getWaypointMissionOperator().startMission(djiError -> {
-            if (djiError == null) {
-                Timber.i("Mission Start - OK - error is null");
-                reportMission(2, "Success");
-            } else {
-                Timber.e("Mission Start - FAILED - djiError: %s", djiError.getDescription());
-                reportMission(-1, "Error. "+djiError.getErrorCode());
-            }
-        });
+        if (!isInV2SDKMode()) {
+            MissionControl.getInstance().getWaypointMissionOperator().startMission(djiError -> {
+                if (djiError == null) {
+                    Timber.i("Mission Start - OK - error is null");
+                    reportMission(2, "Success");
+                } else {
+                    Timber.e("Mission Start - FAILED - djiError: %s", djiError.getDescription());
+                    reportMission(-1, "Error. "+djiError.getErrorCode());
+                }
+            });
+        } else {
+            MissionControl.getInstance().getWaypointMissionV2Operator().startMission(djiError -> {
+                if (djiError == null) {
+                    Timber.i("Mission Start - OK - error is null");
+                    reportMission(2, "Success");
+                } else {
+                    Timber.e("Mission Start - FAILED - djiError: %s", djiError.getDescription());
+                    reportMission(-1, "Error. "+djiError.getErrorCode());
+                }
+            });
+        }
     }
 }
