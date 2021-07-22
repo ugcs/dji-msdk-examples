@@ -9,7 +9,7 @@ buildscript {
         java_version = JavaVersion.VERSION_1_8
         kotlin_version = '1.4.0'
 
-        dji_sdk_version = "4.14.1"
+        dji_sdk_version = "4.15"
         dji_uxsdk_version = "4.14"
 
         multidex_version = "2.0.1"
