@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
+import dji.common.error.DJIWaypointV2Error;
 import dji.common.flightcontroller.simulator.InitializationData;
 import dji.common.gimbal.Rotation;
 import dji.common.gimbal.RotationMode;
@@ -41,7 +42,11 @@ import dji.common.mission.waypoint.WaypointMissionHeadingMode;
 import dji.common.mission.waypoint.WaypointMissionState;
 import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.mission.waypoint.WaypointUploadProgress;
+import dji.common.mission.waypointv2.Action.ActionDownloadEvent;
+import dji.common.mission.waypointv2.Action.ActionExecutionEvent;
+import dji.common.mission.waypointv2.Action.ActionState;
 import dji.common.mission.waypointv2.Action.ActionTypes;
+import dji.common.mission.waypointv2.Action.ActionUploadEvent;
 import dji.common.mission.waypointv2.Action.WaypointActuator;
 import dji.common.mission.waypointv2.Action.WaypointAircraftControlParam;
 import dji.common.mission.waypointv2.Action.WaypointAircraftControlRotateYawParam;
@@ -56,9 +61,15 @@ import dji.common.mission.waypointv2.Action.WaypointTrigger;
 import dji.common.mission.waypointv2.Action.WaypointV2Action;
 import dji.common.mission.waypointv2.Action.WaypointV2AssociateTriggerParam;
 import dji.common.mission.waypointv2.WaypointV2;
+import dji.common.mission.waypointv2.WaypointV2ExecutionProgress;
 import dji.common.mission.waypointv2.WaypointV2Mission;
+import dji.common.mission.waypointv2.WaypointV2MissionDownloadEvent;
+import dji.common.mission.waypointv2.WaypointV2MissionExecuteState;
+import dji.common.mission.waypointv2.WaypointV2MissionExecutionEvent;
 import dji.common.mission.waypointv2.WaypointV2MissionState;
 import dji.common.mission.waypointv2.WaypointV2MissionTypes;
+import dji.common.mission.waypointv2.WaypointV2MissionUploadEvent;
+import dji.common.mission.waypointv2.WaypointV2UploadProgress;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.product.Model;
 import dji.common.util.CommonCallbacks;
@@ -76,7 +87,9 @@ import dji.sdk.basestation.BaseStation;
 import dji.sdk.mission.MissionControl;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
+import dji.sdk.mission.waypoint.WaypointV2ActionListener;
 import dji.sdk.mission.waypoint.WaypointV2MissionOperator;
+import dji.sdk.mission.waypoint.WaypointV2MissionOperatorListener;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -109,9 +122,9 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     private final LocationManager locationManager;
     //private final MySimulatorUpdateCallbackAndController simulatorUpdateCallbackAndController;
-
     private ScheduledFuture<?> droneInitFuture;
     private Context context;
+    private WaypointV2Mission missionAwaitingUpload = null;
     private WaypointMissionOperatorListener waypointMissionOperatorListener =  new WaypointMissionOperatorListener() {
         @Override
         public void onDownloadUpdate(@NonNull @NotNull WaypointMissionDownloadEvent waypointMissionDownloadEvent) {
@@ -160,7 +173,98 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             reportMission(3,"WP - Exec Finish");
         }
     };
+    private WaypointV2MissionOperatorListener waypointMissionOperatorListenerV2 =  new WaypointV2MissionOperatorListener() {
+        @Override
+        public void onDownloadUpdate(@NonNull @NotNull WaypointV2MissionDownloadEvent waypointMissionDownloadEvent) {
 
+        }
+
+        @Override
+        public void onUploadUpdate(@NonNull @NotNull WaypointV2MissionUploadEvent waypointMissionState) {
+
+            WaypointV2UploadProgress up = waypointMissionState.getProgress();
+            WaypointV2MissionState currentState = waypointMissionState.getCurrentState();
+            WaypointV2MissionState previousState = waypointMissionState.getPreviousState();
+
+            if (currentState == WaypointV2MissionState.UPLOADING) {
+                if (up != null) {
+                    Integer index = up.getLastUploadedWaypointIndex() + 1;
+                    int size = up.getTotalWaypointCount();
+                    float progress = ((float) index) / size;
+                    Timber.i("MissionUploadProgress = %3.3f (%d/%d)", progress, index, size);
+                    reportMission(1, String.format("WP upload %3.0f%%", progress));
+
+                }
+            } else if(currentState == WaypointV2MissionState.READY_TO_EXECUTE) {
+                reportMission(1,"WP upload 100%");
+            }
+        }
+
+        @Override
+        public void onExecutionUpdate(@NonNull @NotNull WaypointV2MissionExecutionEvent waypointMissionExecutionEvent) {
+            WaypointV2ExecutionProgress progress = waypointMissionExecutionEvent.getProgress();
+
+            if (progress != null) {
+                int tp = progress.getTargetWaypointIndex();
+                boolean reached = progress.isWaypointReached();
+                WaypointV2MissionExecuteState state = progress.getExecuteState();
+                int total = progress.getTargetWaypointIndex();
+                reportMission(3, String.format("WP running. Completed  %d / %d", tp, total));
+            }
+        }
+
+        @Override
+        public void onExecutionStart() {
+            reportMission(3,"WP - Exec start");
+        }
+        @Override
+        public void onExecutionFinish(@Nullable @org.jetbrains.annotations.Nullable DJIWaypointV2Error djiError) {
+            reportMission(3,"WP - Exec Finish");
+        }
+
+        @Override
+        public void onExecutionStopped() {
+            reportMission(3,"WP - Exec Stopped");
+        }
+    };
+    private WaypointV2ActionListener waypointV2ActionListener = new WaypointV2ActionListener() {
+        @Override
+        public void onDownloadUpdate(@NonNull @NotNull ActionDownloadEvent actionDownloadEvent) {
+
+        }
+
+        @Override
+        public void onUploadUpdate(@NonNull @NotNull ActionUploadEvent actionUploadEvent) {
+            if (actionUploadEvent.getCurrentState() == ActionState.READY_TO_UPLOAD
+                && missionAwaitingUpload != null ) {
+                WaypointV2MissionOperator waypointV2MissionOperator = MissionControl.getInstance().getWaypointMissionV2Operator();
+                waypointV2MissionOperator.uploadWaypointActions(generateV2DemoMissionActions(missionAwaitingUpload), djiWaypointV2ErrorActions -> {
+                    if (djiWaypointV2ErrorActions != null) {
+                        Timber.e("Action upload failed %s", djiWaypointV2ErrorActions.getDescription());
+                        reportMission(-1, "Error. "+djiWaypointV2ErrorActions.getErrorCode());
+                    } else {
+                        Timber.i("Action upload success");
+                        reportMission(1, "Success");
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onExecutionUpdate(@NonNull @NotNull ActionExecutionEvent actionExecutionEvent) {
+
+        }
+
+        @Override
+        public void onExecutionStart(int i) {
+
+        }
+
+        @Override
+        public void onExecutionFinish(int i, @Nullable @org.jetbrains.annotations.Nullable DJIWaypointV2Error djiWaypointV2Error) {
+
+        }
+    };
     public DroneBridgeImpl(@NonNull Context mContext) {
         super(mContext);
         this.context = mContext;
@@ -399,23 +503,31 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         ToastUtils.setResultToToast(String.format("aircraft connected %s", aircraft.getModel().getDisplayName()));
 
         if (aircraft != null) {
-            aircraft.setDiagnosticsInformationCallback(list -> {
+            /*aircraft.setDiagnosticsInformationCallback(list -> {
                 synchronized (this) {
                     for (DJIDiagnostics message:
                     list) {
                         Timber.i("DJIDiagnostics: %s - %s: %s", message.getCode(), message.getReason(), message.getSolution());
                     }
                 }
-            });
+            });*/
         };
         Intent intent = new Intent();
         intent.setAction(BroadcastActions.ON_DRONE_CONNECTED.name());
         LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
         WaypointMissionOperator missionOperator = MissionControl.getInstance().getWaypointMissionOperator();
+        WaypointV2MissionOperator missionOperator2 = MissionControl.getInstance().getWaypointMissionV2Operator();
         if (aircraft != null) {
-            missionOperator.addListener(waypointMissionOperatorListener);
+            if (!isInV2SDKMode()) {
+                missionOperator.addListener(waypointMissionOperatorListener);
+            } else {
+                missionOperator2.addActionListener(waypointV2ActionListener);
+                missionOperator2.addWaypointEventListener(waypointMissionOperatorListenerV2);
+            }
         } else {
             missionOperator.removeListener(waypointMissionOperatorListener);
+            missionOperator2.removeActionListener(waypointV2ActionListener);
+            missionOperator2.removeWaypointListener(waypointMissionOperatorListenerV2);
         }
     }
     private void disconnectDrone() {
@@ -528,15 +640,127 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     private List<Waypoint> getDemoMissionPoints() {
         List<Waypoint> wps = new ArrayList<>();
         float altitude = 5;
-        wps.add(new Waypoint( 56.86284516121504, 24.11235867298803, altitude));
-        wps.add(new Waypoint( 56.86223965480669, 24.11387949252204, altitude));
-        wps.add(new Waypoint( 56.86255183145889, 24.11425772287498, altitude));
-        wps.add(new Waypoint( 56.86305317470773, 24.11279067426949, altitude));
-        wps.add(new Waypoint( 56.86278340890734, 24.112484379522286, altitude));
-        wps.add(new Waypoint( 56.86264453742911, 24.112898171254255, altitude));
-        wps.add(new Waypoint( 56.862959084828134, 24.113256494702128, altitude));
+        wps.add(new Waypoint( 56.86311551, 24.11257672, altitude));
+        wps.add(new Waypoint( 56.86254112, 24.11433871, altitude));
+        wps.add(new Waypoint( 56.86221840, 24.11407137, altitude));
+        wps.add(new Waypoint( 56.86250494, 24.11315743, altitude));
+        wps.add(new Waypoint( 56.86283757, 24.11350581, altitude));
     
         return wps;
+    }
+    private static int lastWpIndex = -1;
+    private static int actionID = 0;
+    private static int lastActionID = 0;
+    private static List<WaypointV2Action> createAction(int wpIndex) {
+        WaypointTrigger waypointTrigger;
+        if (lastWpIndex != wpIndex) {
+            waypointTrigger = Objects.requireNonNull(new WaypointTrigger.Builder()
+                                                             .setTriggerType(ActionTypes.ActionTriggerType.REACH_POINT))
+                    .setReachPointParam(new WaypointReachPointTriggerParam.Builder()
+                                                .setStartIndex(wpIndex)
+                                                .setAutoTerminateCount(0)
+                                                .build())
+                    .build();
+        } else {
+            waypointTrigger = Objects.requireNonNull(new WaypointTrigger.Builder()
+                                                             .setTriggerType(ActionTypes.ActionTriggerType.ASSOCIATE))
+                    .setAssociateParam(new WaypointV2AssociateTriggerParam.Builder()
+                                               .setAssociateActionID(lastActionID)
+                                               .setAssociateType(ActionTypes.AssociatedTimingType.AFTER_FINISHED)
+                                               .setWaitingTime(10)
+                                               .build())
+                    .build();
+        }
+        /*WaypointTrigger waypointSeriesTimeTrigger = new WaypointTrigger.Builder()
+                .setTriggerType(ActionTypes.ActionTriggerType.SIMPLE_INTERVAL)
+                .setIntervalTriggerParam(new WaypointIntervalTriggerParam.Builder()
+                                                 .setInterval(1)
+                                                 .setStartIndex(wpIndex)
+                                                 .setType(ActionTypes.ActionIntervalType.TIME)
+                                                 .build())
+                .build();
+        
+        WaypointActuator waypointSeriesTimeActuator = new WaypointActuator.Builder()
+                .setActuatorType(ActionTypes.ActionActuatorType.CAMERA)
+                .setCameraActuatorParam(new WaypointCameraActuatorParam.Builder()
+                                                .setCameraOperationType(ActionTypes.CameraOperationType.SHOOT_SINGLE_PHOTO)
+                                                .build())
+                .build();
+        
+        WaypointV2Action seriesTimeAction = new WaypointV2Action.Builder()
+                .setActionID(actionID++)
+                .setTrigger(waypointSeriesTimeTrigger)
+                .setActuator(waypointSeriesTimeActuator)
+                .build();
+        */
+        WaypointActuator waypointCamAttActuator = null;
+        WaypointGimbalPathShooting.Builder pathShootBuilder = new WaypointGimbalPathShooting.Builder();
+        List<WaypointGimbalPathPointInfo> pointInfo = new ArrayList<>();
+        switch (wpIndex){
+            case 0:
+            case 2:
+                
+                pathShootBuilder.pathShootingType(ActionTypes.GimbalPathShootingType.START_PATH_SHOOTING);
+                
+                pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(1).stayTime(1).eulerPitch(50).eulerRoll(20).eulerYaw(10).build());
+                pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(1).stayTime(1).eulerPitch(10).eulerRoll(0).eulerYaw(0).build());
+                pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(5).stayTime(5).eulerPitch(40).eulerRoll(0).eulerYaw(0).build());
+                pathShootBuilder.startPathShooting(new WaypointGimbalStartPathShootingParam.Builder().pathCycleMode(ActionTypes.GimbalPathCycleMode.UNLIMITED)
+                                                           .pointInfo(pointInfo)
+                                                           .pointNum(pointInfo.size())
+                                                           .build());
+    
+    
+                waypointCamAttActuator = new WaypointActuator.Builder()
+                        .setActuatorType(ActionTypes.ActionActuatorType.GIMBAL)
+                        .setGimbalActuatorParam(new WaypointGimbalActuatorParam.Builder()
+                                                        .pathShooting(pathShootBuilder.build())
+                                                        .operationType(ActionTypes.GimbalOperationType.PATH_SHOOTING)
+                                                        .build())
+                        .build();
+            break;
+            case 1:
+                pathShootBuilder.pathShootingType(ActionTypes.GimbalPathShootingType.STOP_PATH_SHOOTING);
+                pathShootBuilder.startPathShooting(new WaypointGimbalStartPathShootingParam.Builder().pathCycleMode(ActionTypes.GimbalPathCycleMode.UNLIMITED)
+                                                           .pointInfo(pointInfo)
+                                                           .pointNum(pointInfo.size())
+                                                           .build());
+    
+    
+                waypointCamAttActuator = new WaypointActuator.Builder()
+                        .setActuatorType(ActionTypes.ActionActuatorType.GIMBAL)
+                        .setGimbalActuatorParam(new WaypointGimbalActuatorParam.Builder()
+                                                        .pathShooting(pathShootBuilder.build())
+                                                        .operationType(ActionTypes.GimbalOperationType.PATH_SHOOTING)
+                                                        .build())
+                        .build();
+            break;
+        }
+    
+        List<WaypointV2Action> actions = null;
+        if (waypointCamAttActuator != null) {
+            WaypointV2Action waypointActionCameraAttitude = new WaypointV2Action.Builder()
+                    .setActionID(actionID++)
+                    .setTrigger(waypointTrigger)
+                    .setActuator(waypointCamAttActuator)
+                    .build();
+            lastActionID = actionID - 1;
+            actions = new ArrayList<>();
+            actions.add(waypointActionCameraAttitude);
+        }
+//        actions.add(seriesTimeAction);
+        return actions;
+        
+    }
+    
+    private List<WaypointV2Action> generateV2DemoMissionActions (WaypointV2Mission m) {
+        List<WaypointV2Action> waypointV2ActionList = new ArrayList<>();
+        for(int i = 0; i < m.getWaypointCount();i++) {
+//            WaypointV2 wp = m.getWaypointAtIndex(i);
+            waypointV2ActionList.addAll(createAction(i));
+        }
+        
+        return waypointV2ActionList;
     }
     private WaypointMission generateWPV1demoMission() {
         WaypointMission.Builder builder = new WaypointMission.Builder();
@@ -597,11 +821,11 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             Timber.w(" Perform %s. No KeyManager instance", key.toString());
         }
     }
+    
     @Override
     public void takeOff() {
         performAction(TAKEOFF_KEY_ACTION_KEY);
     }
-
     @Override
     public void land(boolean useKeyInterface)
     {
@@ -617,93 +841,6 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 }
             });
         }
-    }
-    private static int lastWpIndex = -1;
-    private static int actionID = 0;
-    private static int lastActionID = 0;
-    private static List<WaypointV2Action> createAction(int wpIndex) {
-        WaypointTrigger waypointTrigger;
-        if (lastWpIndex != wpIndex) {
-            waypointTrigger = Objects.requireNonNull(new WaypointTrigger.Builder()
-                                                             .setTriggerType(ActionTypes.ActionTriggerType.REACH_POINT))
-                    .setReachPointParam(new WaypointReachPointTriggerParam.Builder()
-                                                .setStartIndex(wpIndex)
-                                                .setAutoTerminateCount(0)
-                                                .build())
-                    .build();
-        } else {
-            waypointTrigger = Objects.requireNonNull(new WaypointTrigger.Builder()
-                                                             .setTriggerType(ActionTypes.ActionTriggerType.ASSOCIATE))
-                    .setAssociateParam(new WaypointV2AssociateTriggerParam.Builder()
-                                               .setAssociateActionID(lastActionID)
-                                               .setAssociateType(ActionTypes.AssociatedTimingType.AFTER_FINISHED)
-                                               .setWaitingTime(10)
-                                               .build())
-                    .build();
-        }
-        WaypointTrigger waypointSeriesTimeTrigger = new WaypointTrigger.Builder()
-                .setTriggerType(ActionTypes.ActionTriggerType.SIMPLE_INTERVAL)
-                .setIntervalTriggerParam(new WaypointIntervalTriggerParam.Builder()
-                                                 .setInterval(10)
-                                                 .setStartIndex(wpIndex)
-                                                 .setType(ActionTypes.ActionIntervalType.TIME)
-                                                 .build())
-                .build();
-        
-        WaypointActuator waypointSeriesTimeActuator = new WaypointActuator.Builder()
-                .setActuatorType(ActionTypes.ActionActuatorType.CAMERA)
-                .setCameraActuatorParam(new WaypointCameraActuatorParam.Builder()
-                                                .setCameraOperationType(ActionTypes.CameraOperationType.SHOOT_SINGLE_PHOTO)
-                                                .build())
-                .build();
-        
-        WaypointV2Action seriesTimeAction = new WaypointV2Action.Builder()
-                .setActionID(actionID++)
-                .setTrigger(waypointSeriesTimeTrigger)
-                .setActuator(waypointSeriesTimeActuator)
-                .build();
-    
-        WaypointGimbalPathShooting.Builder pathShootBuilder = new WaypointGimbalPathShooting.Builder();
-        pathShootBuilder.pathShootingType(ActionTypes.GimbalPathShootingType.START_PATH_SHOOTING);
-        List<WaypointGimbalPathPointInfo> pointInfo = new ArrayList<>();
-        pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(15).stayTime(5).eulerPitch(50).eulerRoll(20).eulerYaw(10).build());
-        pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(15).stayTime(5).eulerPitch(10).eulerRoll(0).eulerYaw(0).build());
-        pointInfo.add(new WaypointGimbalPathPointInfo.Builder().runningTime(5).stayTime(5).eulerPitch(40).eulerRoll(0).eulerYaw(0).build());
-        pathShootBuilder.startPathShooting(new WaypointGimbalStartPathShootingParam.Builder().pathCycleMode(ActionTypes.GimbalPathCycleMode.UNLIMITED)
-                                                    .pointInfo(pointInfo)
-                                                    .pointNum(pointInfo.size())
-                                                   .build());
-    
-        
-        WaypointActuator waypointCamAttActuator = new WaypointActuator.Builder()
-                .setActuatorType(ActionTypes.ActionActuatorType.GIMBAL)
-                .setGimbalActuatorParam(new WaypointGimbalActuatorParam.Builder()
-                                                .pathShooting(pathShootBuilder.build())
-                                                .rotation(new Rotation.Builder().pitch(20f).yaw(20f).build())
-                                                .operationType(ActionTypes.GimbalOperationType.PATH_SHOOTING)
-                                                .build())
-                .build();
-        WaypointV2Action waypointActionCameraAttitude = new WaypointV2Action.Builder()
-                .setActionID(actionID++)
-                .setTrigger(waypointTrigger)
-                .setActuator(waypointCamAttActuator)
-                .build();
-        lastActionID = actionID - 1;
-        List<WaypointV2Action> actions = new ArrayList<>();
-        actions.add(waypointActionCameraAttitude);
-        actions.add(seriesTimeAction);
-        return actions;
-        
-    }
-    
-    private List<WaypointV2Action> generateV2DemoMissionActions (WaypointV2Mission m) {
-        List<WaypointV2Action> waypointV2ActionList = new ArrayList<>();
-        for(int i = 0; i < m.getWaypointCount();i++) {
-//            WaypointV2 wp = m.getWaypointAtIndex(i);
-            waypointV2ActionList.addAll(createAction(i));
-        }
-        
-        return waypointV2ActionList;
     }
     @Override
     public void uploadDemoMission() {
@@ -752,6 +889,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             WaypointV2MissionOperator waypointV2MissionOperator = MissionControl.getInstance().getWaypointMissionV2Operator();
             waypointV2MissionOperator.loadMission(m, djiWaypointV2Error -> {
                 state.set(waypointV2MissionOperator.getCurrentState());
+                missionAwaitingUpload = m;
                 if (djiWaypointV2Error != null) {
                     reportMission(-1, "Error. "+djiWaypointV2Error.getErrorCode());
                     Timber.e("Mission Upload - WaypointMissionOperator - loadMission FAILED (state = %s) as %s", state.get().name(), djiWaypointV2Error.getDescription());
@@ -759,15 +897,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     Timber.i("Mission Upload - WaypointMissionOperator - uploadMission... (state = %s)", state.get().name());
                     waypointV2MissionOperator.uploadMission(djiError -> {
                         if (djiError == null) {
-                            waypointV2MissionOperator.uploadWaypointActions(generateV2DemoMissionActions(m), djiWaypointV2ErrorActions -> {
-                                if (djiWaypointV2ErrorActions != null) {
-                                    Timber.e("Action upload failed %s", djiWaypointV2ErrorActions.getDescription());
-                                    reportMission(-1, "Error. "+djiWaypointV2ErrorActions.getErrorCode());
-                                } else {
-                                    Timber.i("Action upload success");
-                                    reportMission(1, "Success");
-                                }
-                            });
+
                             Timber.i("Mission Upload - OK - error is null");
                         } else {
                             Timber.e("Mission Upload - FAILED - djiError: %s", djiError.getDescription());
