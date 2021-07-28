@@ -57,6 +57,13 @@
             android:enabled="false"
             android:layout_marginEnd="5dp"
             android:layout_width="130dp"/>
+        <Button
+            android:id="@+id/btn_detect_camera_modes"
+            android:text="Detect camera modes"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
     </LinearLayout>
 
 </RelativeLayout>
