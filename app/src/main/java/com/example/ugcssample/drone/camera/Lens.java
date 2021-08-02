@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.ugcssample.drone.CameraTestCallableEnum;
 import com.example.ugcssample.drone.camera.settings.lens.AntiFlickerFrequency;
 import com.example.ugcssample.drone.camera.settings.lens.Aperture;
 import com.example.ugcssample.drone.camera.settings.lens.DisplayMode;
@@ -207,7 +208,7 @@ public interface Lens {
      */
     @Nullable
     ShutterSpeed getShutterSpeed();
-
+    @CameraTestCallableEnum()
     void setShutterSpeed(@NonNull ShutterSpeed shutterSpeed, Callback onSet);
 
     void addShutterSpeedChangeListener(@NonNull ValueChangeListener<ShutterSpeed> listener);
@@ -239,7 +240,7 @@ public interface Lens {
      */
     @Nullable
     ResolutionAndFrameRate getVideoResolutionAndFrameRate();
-
+    
     void setVideoResolutionAndFrameRate(ResolutionAndFrameRate resolutionAndFrameRate, Callback onSet);
 
     void addResolutionAndFrameRateChangeListener(@NonNull ValueChangeListener<ResolutionAndFrameRate> listener);

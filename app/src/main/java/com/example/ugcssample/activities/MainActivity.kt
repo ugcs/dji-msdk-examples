@@ -4,13 +4,16 @@ import android.content.*
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.R
+import com.example.ugcssample.drone.CameraTestCallableEnum
 import com.example.ugcssample.drone.DroneBridgeImpl
+import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.fragment.VideoViewFragment
 import com.example.ugcssample.services.DjiAppMainService
 import com.example.ugcssample.services.DjiAppMainServiceBinder
@@ -19,6 +22,7 @@ import com.example.ugcssample.utils.ArrayUtils
 import com.example.ugcssample.utils.PermissionUtils
 import dji.sdk.camera.VideoFeeder
 import timber.log.Timber
+import java.lang.reflect.Method
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -70,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         btnSimulator!!.setOnClickListener { appMainService!!.startSimulator() }
         btnDetectCameraModes = findViewById(R.id.btn_detect_camera_modes)
         btnDetectCameraModes?.setOnClickListener { appMainService!!.testCameraModes() }
+    
     }
 
     protected fun onMainServiceConnected(name: ComponentName?, binder: IBinder) {
