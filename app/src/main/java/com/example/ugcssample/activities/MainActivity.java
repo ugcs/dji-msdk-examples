@@ -1,11 +1,15 @@
 package com.example.ugcssample.activities;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -17,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.ugcssample.R;
@@ -28,6 +33,7 @@ import com.example.ugcssample.services.DjiAppMainServiceImpl;
 import com.example.ugcssample.utils.ArrayUtils;
 import com.example.ugcssample.utils.PermissionUtils;
 
+import java.io.File;
 import java.util.List;
 
 import dji.sdk.camera.VideoFeeder;
@@ -36,7 +42,8 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity {
 
     private static final IntentFilter EVENT_FILTER = new IntentFilter();
-
+    private static final int PICKFILE_RESULT_CODE = 45;
+    
     static {
         for (DroneBridgeImpl.BroadcastActions action : DroneBridgeImpl.BroadcastActions.values()) {
             EVENT_FILTER.addAction(action.name());
@@ -50,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnTakeOff;
     private Button btnLand;
     private Button btnLandDirect;
+    private Button btnNativeRouteMission;
     private TextView tvMissionDebug;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
     private VideoViewFragment primaryVideoFeedView;
-
     private final BroadcastReceiver eventReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -73,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
                     btnUploadMission.setEnabled(true);
                     btnSimulator.setEnabled(true);
                     btnTakeOff.setEnabled(true);
+                    btnNativeRouteMission.setEnabled(true);
                     primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
                 break;
                 case ON_MISSION_STATUS:
@@ -100,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,16 +158,27 @@ public class MainActivity extends AppCompatActivity {
             appMainService.land(true);
             btnTakeOff.setEnabled(false);
         });
+        btnNativeRouteMission = findViewById(R.id.btn_native_route_mission);
+        btnNativeRouteMission.setOnClickListener(v -> {
+            Intent chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+            chooseFile.addCategory(Intent.CATEGORY_OPENABLE);
+            chooseFile.setType("text/plain");
+            startActivityForResult(
+                    Intent.createChooser(chooseFile, "Choose a file"),
+                    PICKFILE_RESULT_CODE
+                                  );
+            
+        });
     }
-
+    
     protected void onMainServiceConnected(ComponentName name, IBinder binder) {
         appMainService = ((DjiAppMainServiceBinder)binder).getService();
         checkAndRequestAndroidPermissions();
     }
-
+    
     protected void onMainServiceDisconnected() {
     }
-
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -168,18 +186,27 @@ public class MainActivity extends AppCompatActivity {
         broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.registerReceiver(eventReceiver, EVENT_FILTER);
     }
-
+    
     @Override
     protected void onPause() {
         super.onPause();
     }
-
+    
     @Override
     protected void onDestroy() {
         unbindService(sConn);
         super.onDestroy();
     }
-
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICKFILE_RESULT_CODE && resultCode == Activity.RESULT_OK){
+            Uri content_describer = data.getData();
+            String src = content_describer.getPath();
+            File nativeRoute = new File(src);
+            appMainService.uploadMission(nativeRoute);
+        }
+    }
     private void checkAndRequestAndroidPermissions() {
         List<String> missing = PermissionUtils.checkForMissingPermission(getApplicationContext());
         if (!ArrayUtils.isEmpty(missing)) {
@@ -194,9 +221,11 @@ public class MainActivity extends AppCompatActivity {
             onAndroidPermissionsValid();
         }
     }
+    
     protected void onAndroidPermissionsValid() {
         appMainService.init();
     }
+    
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

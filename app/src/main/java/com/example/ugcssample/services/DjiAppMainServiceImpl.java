@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import com.example.ugcssample.drone.DroneBridge;
 import com.example.ugcssample.drone.DroneBridgeImpl;
 
+import java.io.File;
+
 import timber.log.Timber;
 public class DjiAppMainServiceImpl extends Service implements DjiAppMainService {
 
@@ -67,6 +69,11 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     public void land(boolean useKeyInterface) {
         droneBridge.land(useKeyInterface);
     }
+    @Override
+    public void uploadMission(File nativeRoute) {
+        droneBridge.uploadMission(nativeRoute);
+    }
+    
     @Override
     public void takeOff() {
         droneBridge.takeOff();

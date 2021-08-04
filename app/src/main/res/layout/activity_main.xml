@@ -32,7 +32,7 @@
         <LinearLayout
             android:id="@+id/main_buttons"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
 
             android:elevation="1000dp">
 
@@ -83,12 +83,33 @@
 
             <Button
                 android:id="@+id/btn_land_2"
+                style="@style/Button"
                 android:layout_width="130dp"
                 android:layout_height="70dp"
                 android:layout_marginEnd="5dp"
                 android:enabled="false"
-                android:text="Land (direct)"
-                style="@style/Button" />
+                android:text="Land (direct)" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/second_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_alignParentBottom="true"
+            android:elevation="1000dp"
+            android:gravity="right">
+
+            <Button
+                android:id="@+id/btn_native_route_mission"
+                style="@style/Button"
+                android:layout_width="150dp"
+                android:layout_height="70dp"
+                android:layout_marginEnd="5dp"
+                android:enabled="false"
+                android:text="Upload native route mission" />
+
 
         </LinearLayout>
 
