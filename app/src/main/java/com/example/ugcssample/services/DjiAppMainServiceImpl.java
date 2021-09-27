@@ -7,6 +7,7 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import com.example.ugcssample.drone.BeaconController;
 import com.example.ugcssample.drone.DroneBridge;
 import com.example.ugcssample.drone.DroneBridgeImpl;
 
@@ -57,5 +58,10 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
 
     private DroneBridge newDroneBridge(Context context) {
         return new DroneBridgeImpl(context);
+    }
+    
+    @Override
+    public BeaconController getBeaconController() {
+        return droneBridge.getBeaconController();
     }
 }

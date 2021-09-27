@@ -19,4 +19,6 @@ public interface DroneBridge {
     void startModelSimulator();
 
     void onDestroy();
+    
+    BeaconController getBeaconController();
 }

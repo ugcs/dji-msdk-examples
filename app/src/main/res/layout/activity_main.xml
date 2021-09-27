@@ -34,29 +34,50 @@
         android:layout_height="match_parent"
         android:layout_below="@id/main_indicators_fragment_extra_distance"
         android:elevation="1000dp">
+
         <Button
             android:id="@+id/btn_simulator"
-            android:text="Start Simulator"
+            android:layout_width="130dp"
             android:layout_height="70dp"
-            android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:enabled="false"
+            android:text="Start Simulator"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_upload_mission"
-            android:text="Upload mission"
+            android:layout_width="130dp"
             android:layout_height="70dp"
-            android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:enabled="false"
+            android:text="Upload mission"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_start_mission"
-            android:text="Start mission"
+            android:layout_width="130dp"
             android:layout_height="70dp"
-            android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:enabled="false"
+            android:text="Start mission"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_beacon_trigger"
+            android:layout_width="130dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="5dp"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:text="Switch beacon" />
+
+        <TextView
+            android:id="@+id/tv_beacon_state"
+            android:layout_width="130dp"
+            android:layout_height="70dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Connected: N/A\nEnabled:N/A" />
     </LinearLayout>
 
 </RelativeLayout>

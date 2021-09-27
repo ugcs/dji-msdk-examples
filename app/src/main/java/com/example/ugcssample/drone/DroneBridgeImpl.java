@@ -8,7 +8,6 @@ import android.hardware.usb.UsbAccessory;
 import android.location.LocationManager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -27,13 +26,10 @@ import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.keysdk.ProductKey;
 import dji.keysdk.callback.KeyListener;
-import dji.log.DJILog;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.basestation.BaseStation;
-import dji.sdk.flightcontroller.FlightAssistant;
-import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -61,12 +57,13 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     private ScheduledFuture<?> droneInitFuture;
     private Context context;
-
+    
+    private BeaconController beaconController;
 
     public DroneBridgeImpl(@NonNull Context mContext) {
         super(mContext);
         this.context = mContext;
-
+        beaconController = new BeaconController();
        // this.simulatorUpdateCallbackAndController
        //         = new MySimulatorUpdateCallbackAndController(vehicleModelContainer, lbm);
 
@@ -309,6 +306,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     }
                 }
             });
+            beaconController.init(aircraft);
         };
         Intent intent = new Intent();
         intent.setAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
@@ -382,5 +380,10 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 }
             });
         });
+    }
+    
+    @Override
+    public BeaconController getBeaconController() {
+        return beaconController;
     }
 }

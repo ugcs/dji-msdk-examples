@@ -1,140 +1,160 @@
-package com.example.ugcssample.activities;
+package com.example.ugcssample.activities
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;
-import android.widget.Button;
+import android.content.*
+import androidx.appcompat.app.AppCompatActivity
+import com.example.ugcssample.activities.MainActivity
+import com.example.ugcssample.drone.DroneBridgeImpl
+import android.widget.TextView
+import com.example.ugcssample.services.DjiAppMainService
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.ugcssample.fragment.VideoViewFragment
+import dji.sdk.camera.VideoFeeder
+import com.example.ugcssample.drone.BeaconController
+import android.os.Bundle
+import com.example.ugcssample.R
+import com.example.ugcssample.services.DjiAppMainServiceImpl
+import android.os.IBinder
+import com.example.ugcssample.services.DjiAppMainServiceBinder
+import com.example.ugcssample.utils.PermissionUtils
+import android.os.Build
+import android.view.View
+import android.widget.Button
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import com.example.ugcssample.utils.ArrayUtils
+import kotlinx.coroutines.*
+import timber.log.Timber
+import kotlin.coroutines.CoroutineContext
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import com.example.ugcssample.R;
-import com.example.ugcssample.drone.DroneBridgeImpl;
-import com.example.ugcssample.fragment.VideoViewFragment;
-import com.example.ugcssample.services.DjiAppMainService;
-import com.example.ugcssample.services.DjiAppMainServiceBinder;
-import com.example.ugcssample.services.DjiAppMainServiceImpl;
-import com.example.ugcssample.utils.ArrayUtils;
-import com.example.ugcssample.utils.PermissionUtils;
-
-import java.util.List;
-
-import dji.sdk.camera.VideoFeeder;
-import timber.log.Timber;
-
-public class MainActivity extends AppCompatActivity {
-
-    private static final IntentFilter EVENT_FILTER = new IntentFilter();
-
-    static {
-        EVENT_FILTER.addAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
+class MainActivity : AppCompatActivity(), CoroutineScope  {
+    private var job: Job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+    
+    companion object {
+        private val EVENT_FILTER = IntentFilter()
+        const val REQUEST_PERMISSION_CODE = 2358
+        
+        init {
+            EVENT_FILTER.addAction(DroneBridgeImpl.ON_DRONE_CONNECTED)
+        }
     }
-    private Intent sIntent;
-    private ServiceConnection sConn;
-    private Button btnSimulator;
-    protected DjiAppMainService appMainService;
-    public static final int REQUEST_PERMISSION_CODE = 2358;
-    LocalBroadcastManager broadcastManager;
-    private VideoViewFragment primaryVideoFeedView;
-
-    private final BroadcastReceiver eventReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            final String action = intent.getAction();
-            if (action == null)
-                return;
-
-            if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
-                btnSimulator.setEnabled(true);
-                primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
+    
+    private var sIntent: Intent? = null
+    private var sConn: ServiceConnection? = null
+    private var btnSimulator: Button? = null
+    private var btnBeacon: Button? = null
+    private var tvBeaconState: TextView? = null
+    protected var appMainService: DjiAppMainService? = null
+    var broadcastManager: LocalBroadcastManager? = null
+    private var primaryVideoFeedView: VideoViewFragment? = null
+    private val eventReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action ?: return
+            if (DroneBridgeImpl.ON_DRONE_CONNECTED == action) {
+                btnSimulator!!.isEnabled = true
+                btnBeacon!!.isEnabled = true
+                primaryVideoFeedView!!.registerLiveVideo(VideoFeeder.getInstance().primaryVideoFeed, true)
+                outputBeaconState()
             }
         }
-    };
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        sIntent = new Intent(this, DjiAppMainServiceImpl.class);
-        sConn = new ServiceConnection() {
-            public void onServiceConnected(ComponentName name, IBinder binder) {
-                MainActivity.this.onMainServiceConnected(name, binder);
+    }
+    
+    private fun outputBeaconState() {
+        appMainService?.beaconController?.let { beaconController ->
+            launch {
+                val text = "Connected: ${beaconController.areBeaconsSupported()}\nEnabled:${beaconController.areBeaconsSwitchOn()}"
+                runOnUiThread {
+                    tvBeaconState!!.setText(text)
+                }
             }
-
-            public void onServiceDisconnected(ComponentName name) {
-                MainActivity.this.onMainServiceDisconnected();
+        }
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        sIntent = Intent(this, DjiAppMainServiceImpl::class.java)
+        sConn = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+                onMainServiceConnected(name, binder)
             }
-        };
-        primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
-        btnSimulator = (Button) findViewById(R.id.btn_simulator);
-        btnSimulator.setOnClickListener(v -> {
-            appMainService.startSimulator();
-        });
+            
+            override fun onServiceDisconnected(name: ComponentName) {
+                onMainServiceDisconnected()
+            }
+        }
+        primaryVideoFeedView = findViewById<View>(R.id.video_view_primary_video_feed) as VideoViewFragment
+        btnSimulator = findViewById<View>(R.id.btn_simulator) as Button
+        btnSimulator!!.setOnClickListener { v: View? -> appMainService!!.startSimulator() }
+        btnBeacon = findViewById(R.id.btn_beacon_trigger)
+        tvBeaconState = findViewById(R.id.tv_beacon_state)
+        outputBeaconState()
+        btnBeacon?.setOnClickListener {
+            val controller = appMainService?.beaconController
+            Toast.makeText(this,"Switching beacon",Toast.LENGTH_SHORT).show()
+            launch {
+                controller?.switchBeaconsOn(!controller.areBeaconsSwitchOn())
+                runOnUiThread {
+                    Toast.makeText(baseContext,"Switched beacon",Toast.LENGTH_SHORT).show()
+                }
+                outputBeaconState()
+            }
+        }
     }
-
-    protected void onMainServiceConnected(ComponentName name, IBinder binder) {
-        appMainService = ((DjiAppMainServiceBinder)binder).getService();
-        checkAndRequestAndroidPermissions();
+    
+    protected fun onMainServiceConnected(name: ComponentName?, binder: IBinder) {
+        appMainService = (binder as DjiAppMainServiceBinder).service
+        checkAndRequestAndroidPermissions()
+        outputBeaconState()
     }
-
-    protected void onMainServiceDisconnected() {
+    
+    protected fun onMainServiceDisconnected() {}
+    override fun onResume() {
+        super.onResume()
+        bindService(sIntent, sConn!!, BIND_AUTO_CREATE)
+        broadcastManager = LocalBroadcastManager.getInstance(this)
+        broadcastManager!!.registerReceiver(eventReceiver, EVENT_FILTER)
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        bindService(sIntent, sConn, BIND_AUTO_CREATE);
-        broadcastManager = LocalBroadcastManager.getInstance(this);
-        broadcastManager.registerReceiver(eventReceiver, EVENT_FILTER);
+    
+    override fun onPause() {
+        super.onPause()
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+    
+    override fun onDestroy() {
+        unbindService(sConn!!)
+        super.onDestroy()
     }
-
-    @Override
-    protected void onDestroy() {
-        unbindService(sConn);
-        super.onDestroy();
-    }
-
-    private void checkAndRequestAndroidPermissions() {
-        List<String> missing = PermissionUtils.checkForMissingPermission(getApplicationContext());
+    
+    private fun checkAndRequestAndroidPermissions() {
+        val missing = PermissionUtils.checkForMissingPermission(applicationContext)
         if (!ArrayUtils.isEmpty(missing)) {
-            String[] missingPermissions = missing.toArray(new String[0]);
+            val missingPermissions = missing.toTypedArray()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ActivityCompat.requestPermissions(this, missingPermissions, REQUEST_PERMISSION_CODE);
-            } else {
+                ActivityCompat.requestPermissions(this, missingPermissions, REQUEST_PERMISSION_CODE)
+            }
+            else {
                 //failed
             }
-        } else {
+        }
+        else {
             //all android permissions granted;
-            onAndroidPermissionsValid();
+            onAndroidPermissionsValid()
         }
     }
-    protected void onAndroidPermissionsValid() {
-        appMainService.init();
+    
+    protected fun onAndroidPermissionsValid() {
+        appMainService!!.init()
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>,
+                                            grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Check for granted permission and remove from missing list
         if (requestCode == REQUEST_PERMISSION_CODE) {
-            Timber.d("onRequestPermissionsResult...");
-            checkAndRequestAndroidPermissions();
+            Timber.d("onRequestPermissionsResult...")
+            checkAndRequestAndroidPermissions()
         }
     }
 }
