@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection sConn;
     private Button btnSimulator;
     private Button bindRc;
+    private Button bindCustomMedia;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -84,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
         bindRc = (Button) findViewById(R.id.btn_rc);
         bindRc.setOnClickListener(v -> {
             appMainService.bindRC();
+        });
+        bindCustomMedia = (Button) findViewById(R.id.btn_custom_media);
+        bindCustomMedia.setOnClickListener(v -> {
+            appMainService.setMedia("Custom media info");
         });
     }
 
@@ -131,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onAndroidPermissionsValid() {
         appMainService.init();
         bindRc.setEnabled(true);
+        bindCustomMedia.setEnabled(true);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,

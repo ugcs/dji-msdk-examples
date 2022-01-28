@@ -14,6 +14,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.ugcssample.utils.PermissionCheckResult;
 import com.example.ugcssample.utils.ToastUtils;
 
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,14 +24,18 @@ import dji.common.flightcontroller.simulator.InitializationData;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.remotecontroller.HardwareState;
 import dji.common.util.CommonCallbacks;
+import dji.keysdk.CameraKey;
+import dji.keysdk.DJIKey;
 import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.keysdk.ProductKey;
 import dji.keysdk.callback.KeyListener;
+import dji.keysdk.callback.SetCallback;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.basestation.BaseStation;
+import dji.sdk.camera.Camera;
 import dji.sdk.products.Aircraft;
 import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
@@ -48,6 +53,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     private final FlightControllerKey serialNumberKey = FlightControllerKey.create(FlightControllerKey.SERIAL_NUMBER);
     private final ProductKey connectionKey = ProductKey.create(ProductKey.CONNECTION);
+    static final DJIKey CUSTOM_INFORMATION_KEY = CameraKey.create(CameraKey.CUSTOM_INFORMATION);
 
     private final KeyListener connectionKeyListener = (oldValue, newValue) -> onConnectionChanged(newValue);
     private PermissionCheckResult permissionCheckResult;
@@ -402,6 +408,26 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     ToastUtils.setResultToToast(result);
                 }
             });
+        });
+    }
+
+    @Override
+    public void setMediaFileCustomInformation(String information) {
+        KeyManager km = KeyManager.getInstance();
+
+        Timber.i("setMediaFileCustomInformation %s", information);
+        DJIKey CUSTOM_INFORMATION_KEY = CameraKey.create(CameraKey.CUSTOM_INFORMATION);
+
+        km.setValue(CUSTOM_INFORMATION_KEY, information, new SetCallback() {
+            @Override
+            public void onSuccess() {
+                ToastUtils.showToast("Set CUSTOM_INFORMATION_KEY - SUCCESS");
+            }
+
+            @Override
+            public void onFailure(@NonNull DJIError djiError) {
+                ToastUtils.showToast("Set CUSTOM_INFORMATION_KEY - Failure - " + djiError.getDescription());
+            }
         });
     }
 }

@@ -18,6 +18,8 @@ public interface DroneBridge {
 
     void startModelSimulator();
 
+    void setMediaFileCustomInformation(String information);
+
     void onDestroy();
 
     void remoteController();

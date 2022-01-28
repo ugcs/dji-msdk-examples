@@ -4,4 +4,5 @@ public interface DjiAppMainService {
     void init();
     void startSimulator();
     void bindRC();
+    void setMedia(String information);
 }

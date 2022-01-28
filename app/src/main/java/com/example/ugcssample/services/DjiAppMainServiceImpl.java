@@ -60,6 +60,11 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
         droneBridge.remoteController();
     }
 
+    @Override
+    public void setMedia(String information) {
+        droneBridge.setMediaFileCustomInformation(information);
+    }
+
     private DroneBridge newDroneBridge(Context context) {
         return new DroneBridgeImpl(context);
     }
