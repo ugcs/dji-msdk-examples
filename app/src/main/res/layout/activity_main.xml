@@ -41,7 +41,15 @@
             android:enabled="false"
             android:layout_marginEnd="5dp"
             android:layout_width="130dp"/>
+        <Button
+            android:id="@+id/btn_rc"
+            android:text="Bind RC"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
 
+        <!--
         <Button
             android:id="@+id/btn_upload_mission"
             android:text="Upload mission"
@@ -57,6 +65,7 @@
             android:enabled="false"
             android:layout_marginEnd="5dp"
             android:layout_width="130dp"/>
+            -->
     </LinearLayout>
 
 </RelativeLayout>
