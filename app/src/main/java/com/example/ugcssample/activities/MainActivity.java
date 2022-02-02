@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -28,6 +29,8 @@ import com.example.ugcssample.utils.PermissionUtils;
 import java.util.List;
 
 import dji.sdk.camera.VideoFeeder;
+import dji.ux.widget.FPVOverlayWidget;
+import dji.ux.widget.FPVWidget;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,10 +45,15 @@ public class MainActivity extends AppCompatActivity {
     private Button btnSimulator;
     private Button bindRc;
     private Button bindCustomMedia;
+    private Button bindWidgets;
+    private FPVWidget fpvWidget;
+    private FPVOverlayWidget fpvOverlayWidget;
+    private FPVWidget secondaryFpvWidget;
+    private boolean switched = false;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
-    private VideoViewFragment primaryVideoFeedView;
+  //  private VideoViewFragment primaryVideoFeedView;
 
     private final BroadcastReceiver eventReceiver = new BroadcastReceiver() {
         @Override
@@ -57,10 +65,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
                 btnSimulator.setEnabled(true);
-                primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
+                bindRc.setEnabled(true);
+                bindCustomMedia.setEnabled(true);
+                bindWidgets.setEnabled(true);
+               // primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
             }
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.onMainServiceDisconnected();
             }
         };
-        primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
+     //   primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
         btnSimulator = (Button) findViewById(R.id.btn_simulator);
         btnSimulator.setOnClickListener(v -> {
             appMainService.startSimulator();
@@ -89,6 +101,22 @@ public class MainActivity extends AppCompatActivity {
         bindCustomMedia = (Button) findViewById(R.id.btn_custom_media);
         bindCustomMedia.setOnClickListener(v -> {
             appMainService.setMedia("Custom media info");
+        });
+
+        fpvWidget = (FPVWidget)findViewById(R.id.fpv_custom_widget);
+        fpvOverlayWidget = (FPVOverlayWidget) findViewById(R.id.fpv_overlay_widget);
+        secondaryFpvWidget = (FPVWidget)findViewById(R.id.secondary_fpv_custom_widget);
+
+        bindWidgets = (Button) findViewById(R.id.switch_button_primary);
+        bindWidgets.setOnClickListener(v -> {
+            if (!switched) {
+                fpvWidget.setVideoSource(FPVWidget.VideoSource.PRIMARY);
+                secondaryFpvWidget.setVideoSource(FPVWidget.VideoSource.SECONDARY);
+            } else {
+                fpvWidget.setVideoSource(FPVWidget.VideoSource.SECONDARY);
+                secondaryFpvWidget.setVideoSource(FPVWidget.VideoSource.PRIMARY);
+            }
+            switched = !switched;
         });
     }
 
@@ -135,8 +163,6 @@ public class MainActivity extends AppCompatActivity {
     }
     protected void onAndroidPermissionsValid() {
         appMainService.init();
-        bindRc.setEnabled(true);
-        bindCustomMedia.setEnabled(true);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode,

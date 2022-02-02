@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:background="#f0f0f0">
     <!--android:background="#101010"-->
     <!-- android:layout_below="@+id/main_indicators_fragment_container" -->
@@ -20,12 +21,32 @@
         android:layout_below="@id/main_indicators_fragment_extra_distance"
         android:elevation="1dp">
 
-        <com.example.ugcssample.fragment.VideoViewFragment
-            android:id="@+id/video_view_primary_video_feed"
+        <dji.ux.widget.FPVWidget
+            android:id="@+id/fpv_custom_widget"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center" />
+            android:layout_centerInParent="true"
+            custom:sourceCameraNameVisibility="true"
+            custom:videoSource="primary"/>
 
+        <dji.ux.widget.FPVOverlayWidget
+            android:id="@+id/fpv_overlay_widget"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            custom:overlayVideoSource="primary"/>
+        <FrameLayout
+            android:layout_width="160dp"
+            android:layout_height="90dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorAccent">
+            <dji.ux.widget.FPVWidget
+                android:id="@+id/secondary_fpv_custom_widget"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                custom:sourceCameraNameVisibility="true"
+                custom:videoSource="secondary"/>
+        </FrameLayout>
     </RelativeLayout>
 
     <LinearLayout
@@ -33,14 +54,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/main_indicators_fragment_extra_distance"
-        android:elevation="1000dp">
+        android:elevation="1000dp"
+        android:baselineAligned="false">
         <Button
             android:id="@+id/btn_simulator"
             android:text="Start Simulator"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:layout_width="130dp" />
         <Button
             android:id="@+id/btn_rc"
             android:text="Bind RC"
@@ -51,6 +73,13 @@
         <Button
             android:id="@+id/btn_custom_media"
             android:text="Custom Media"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
+        <Button
+            android:id="@+id/switch_button_primary"
+            android:text="Switch widgets"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
