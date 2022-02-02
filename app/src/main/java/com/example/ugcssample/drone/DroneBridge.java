@@ -23,4 +23,6 @@ public interface DroneBridge {
     void onDestroy();
 
     void remoteController();
+
+    void remoteControllerBind();
 }

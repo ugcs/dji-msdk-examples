@@ -23,6 +23,7 @@ import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.remotecontroller.HardwareState;
+import dji.common.remotecontroller.ProfessionalRC;
 import dji.common.util.CommonCallbacks;
 import dji.keysdk.CameraKey;
 import dji.keysdk.DJIKey;
@@ -384,6 +385,58 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 ToastUtils.showToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
                 int x = 1;
                 int r = x + 1;
+            });
+        });
+
+
+    }
+
+    @Override
+    public void remoteControllerBind() {
+
+        WORKER.submit(() -> {
+
+            RemoteController remoteController = aircraft.getRemoteController();
+
+            boolean supported = remoteController.isCustomizableButtonSupported();
+            remoteController.getButtonConfig(new CommonCallbacks.CompletionCallbackWith<ProfessionalRC.ButtonConfiguration>() {
+                @Override
+                public void onSuccess(ProfessionalRC.ButtonConfiguration buttonConfiguration) {
+
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+
+                }
+            });
+            remoteController.getSelectedButtonProfileGroup(new CommonCallbacks.CompletionCallbackWith<String>() {
+                @Override
+                public void onSuccess(String s) {
+
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+
+                }
+            });
+            remoteController.fetchCustomizedActionOfButton(ProfessionalRC.CustomizableButton.C1, new CommonCallbacks.CompletionCallbackWith<ProfessionalRC.ButtonAction>() {
+                @Override
+                public void onSuccess(ProfessionalRC.ButtonAction buttonAction) {
+
+                }
+
+                @Override
+                public void onFailure(DJIError djiError) {
+
+                }
+            });
+            remoteController.customizeButton(ProfessionalRC.CustomizableButton.C1, ProfessionalRC.ButtonAction.CameraZoom, djiError -> {
+              //  ToastUtils.showToast("C1 ZOOM binded");
+            });
+            remoteController.customizeButton(ProfessionalRC.CustomizableButton.FIVE_D_UP, ProfessionalRC.ButtonAction.GIMBAL_YAW_RECENTER, djiError -> {
+                //ToastUtils.showToast("FIVE_D_UP ZOOM binded");
             });
         });
 
