@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.R
-import com.example.ugcssample.drone.CameraTestCallableEnum
 import com.example.ugcssample.drone.DroneBridgeImpl
 import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.fragment.VideoViewFragment
