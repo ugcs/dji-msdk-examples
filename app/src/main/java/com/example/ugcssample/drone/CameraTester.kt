@@ -8,20 +8,14 @@ import kotlinx.coroutines.launch
 import java.util.EnumSet.range
 import kotlin.coroutines.suspendCoroutine
 
-class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTestResult>)->Unit) {
+class CameraTester(val camera : Camera) {
 
-    init {
-        GlobalScope.launch {
-            runTests()
-        }
-    }
-
-    private suspend fun runTests() {
+    suspend fun runTests() : List<CameraTestResult> {
         val results = mutableListOf<CameraTestResult>()
         val cameraName = camera.getDisplayName()
         val supportedCameraModes = camera.getSupportedCameraModes()
         for (mode in CameraMode.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 camera.setCameraMode(mode, object : Camera.Callback {
                     override fun run(error: Exception?) {
                         results.add(
@@ -34,13 +28,13 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                                 error.toString()
                                             )
                                    )
-                        Result.success(true)
+                        cont.resumeWith(Result.success(true))
                     }
                 })
             }
         }
         for (mode in PhotoAEBCount.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 camera.setPhotoAEBCount(mode, object : Camera.Callback {
                     override fun run(error: Exception?) {
                         results.add(
@@ -53,13 +47,13 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                                 error.toString()
                                             )
                                    )
-                        Result.success(true)
+                        cont.resumeWith(Result.success(true))
                     }
                 })
             }
         }
         for (mode in PhotoBurstCount.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 camera.setPhotoBurstCount(mode, object : Camera.Callback {
                     override fun run(error: Exception?) {
                         results.add(
@@ -72,14 +66,14 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                                 error.toString()
                                             )
                                    )
-                        Result.success(true)
+                        cont.resumeWith(Result.success(true))
                     }
                 })
             }
         }
         for (count in 0..15) {
             for (interval in 0..10) {
-                suspendCoroutine<Boolean> {
+                suspendCoroutine<Boolean> { cont ->
                     camera.setPhotoTimeIntervalSettings(PhotoTimeIntervalSettings(count, interval),
                                                         object : Camera.Callback {
                                                             override fun run(error: Exception?) {
@@ -93,7 +87,7 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                                                                         error.toString()
                                                                                     )
                                                                            )
-                                                                Result.success(true)
+                                                                cont.resumeWith(Result.success(true))
                                                             }
                                                         })
                 }
@@ -101,7 +95,7 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
         }
     
         for (mode in ShootPhotoMode.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 camera.setShootPhotoMode(mode, object : Camera.Callback {
                     override fun run(error: Exception?) {
                         results.add(
@@ -114,7 +108,7 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                                 error.toString()
                                             )
                                    )
-                        Result.success(true)
+                        cont.resumeWith(Result.success(true))
                     }
                 })
             }
@@ -123,7 +117,7 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
         val lens = camera.getActiveLens()
         val displayModes = lens.supportedDisplayModes
         for (mode in DisplayMode.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setDisplayMode(mode) {
                     results.add(
                         CameraTestResult(
@@ -135,13 +129,13 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
     
         for (mode in AntiFlickerFrequency.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setAntiFlickerFrequency(mode) {
                     results.add(
                         CameraTestResult(
@@ -153,14 +147,14 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
     
         val supportedApertures = lens.supportedApertures
         for (mode in Aperture.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setAperture(mode) {
                     results.add(
                         CameraTestResult(
@@ -172,14 +166,14 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
     
         val supportedExposureModes = lens.supportedExposureModes
         for (mode in ExposureMode.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setExposureMode(mode) {
                     results.add(
                         CameraTestResult(
@@ -191,14 +185,14 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
     
         val supportedExposureCompensations = lens.supportedExposureCompensations
         for (mode in ExposureCompensation.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setExposureCompensation(mode) {
                     results.add(
                         CameraTestResult(
@@ -210,11 +204,11 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
-        suspendCoroutine<Boolean> {
+        suspendCoroutine<Boolean> { cont ->
             lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = false, enabledAF = false)) {
                 results.add(
                     CameraTestResult(
@@ -226,10 +220,10 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                         it.toString()
                                     )
                            )
-                Result.success(true)
+                cont.resumeWith(Result.success(true))
             }
         }
-        suspendCoroutine<Boolean> {
+        suspendCoroutine<Boolean> { cont ->
             lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = true, enabledAF = false)) {
                 results.add(
                     CameraTestResult(
@@ -241,10 +235,10 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                         it.toString()
                                     )
                            )
-                Result.success(true)
+                cont.resumeWith(Result.success(true))
             }
         }
-        suspendCoroutine<Boolean> {
+        suspendCoroutine<Boolean> { cont ->
             lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = false, enabledAF = true)) {
                 results.add(
                     CameraTestResult(
@@ -256,10 +250,10 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                         it.toString()
                                     )
                            )
-                Result.success(true)
+                cont.resumeWith(Result.success(true))
             }
         }
-        suspendCoroutine<Boolean> {
+        suspendCoroutine<Boolean> { cont ->
             lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = true, enabledAF = true)) {
                 results.add(
                     CameraTestResult(
@@ -271,13 +265,13 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                         it.toString()
                                     )
                            )
-                Result.success(true)
+                cont.resumeWith(Result.success(true))
             }
         }
     
         val supportedISOs = lens.supportedISOs
         for (mode in ISO.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setISO(mode) {
                     results.add(
                         CameraTestResult(
@@ -289,13 +283,13 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
         
         for (mode in WhiteBalance.WhiteBalancePreset.values()) {
-            suspendCoroutine<Boolean> {
+            suspendCoroutine<Boolean> { cont ->
                 lens.setWhiteBalance(WhiteBalance(mode)) {
                     results.add(
                         CameraTestResult(
@@ -307,11 +301,11 @@ class CameraTester(val camera : Camera, val onFinishCallback :  (List<CameraTest
                             it.toString()
                                         )
                                )
-                    Result.success(true)
+                    cont.resumeWith(Result.success(true))
                 }
             }
         }
-        
+        return results
     }
 
 }

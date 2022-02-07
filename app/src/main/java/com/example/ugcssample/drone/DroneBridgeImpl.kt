@@ -2,16 +2,20 @@ package com.example.ugcssample.drone
 
 import android.Manifest
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbAccessory
 import android.location.LocationManager
+import android.os.Looper
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.drone.camera.Camera
 import com.example.ugcssample.drone.camera.DjiCamera
 import com.example.ugcssample.utils.PermissionCheckResult
 import com.example.ugcssample.utils.ToastUtils
+import com.google.gson.GsonBuilder
 import dji.common.error.DJIError
 import dji.common.error.DJISDKError
 import dji.common.flightcontroller.simulator.InitializationData
@@ -30,10 +34,15 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import kotlinx.coroutines.*
 import timber.log.Timber
+import java.io.FileWriter
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.suspendCoroutine
+
 
 class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext), DroneBridge {
     private val serialNumberKey = FlightControllerKey.create(FlightControllerKey.SERIAL_NUMBER)
@@ -90,8 +99,8 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
 
                 override fun onProductChanged(baseProduct: BaseProduct) {}
                 override fun onComponentChange(
-                    key: ComponentKey, oldComponent: BaseComponent,
-                    newComponent: BaseComponent
+                    key: ComponentKey?, oldComponent: BaseComponent?,
+                    newComponent: BaseComponent?
                                               ) {
                     onComponentChanged(key, oldComponent, newComponent)
                 }
@@ -377,15 +386,33 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             }
         }
     }
-
-    var camerasReports = "";
-    val cameraTestCallback = { report : List<CameraTestResult> ->
+    val job = SupervisorJob()                               // (1)
+    val scope = CoroutineScope(Dispatchers.Default + job)
+    val cameraTestCallback = { report: List<CameraTestResult> ->
 //        camerasReports += report+"\n\n"+"-".repeat(10)
+        val name = aircraft!!.model.displayName
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH_mm")
+        val date = dateFormat.format(Date())
+    
+        FileWriter("${context.getExternalFilesDir(null)}/cam_test_report_${name}_$date.json").use { writer ->
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            gson.toJson(report, writer)
+            writer.flush()
+            writer.close()
+        }
+        Looper.prepare()
+        Toast.makeText(context,"Tests finished. File dumped",Toast.LENGTH_SHORT).show()
+//        ToastUtils.showToast("Tests finished. File dumped")
     }
 
     override fun testCameraModes() {
-        for (camera in cameraSet) {
-            CameraTester(camera, cameraTestCallback)
+    
+        scope.launch {
+            for (camera in cameraSet) {
+                val tester = CameraTester(camera)
+                val res = tester.runTests()
+                cameraTestCallback.invoke(res)
+            }
         }
     }
 

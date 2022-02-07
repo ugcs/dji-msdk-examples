@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -72,7 +73,10 @@ class MainActivity : AppCompatActivity() {
         btnSimulator = findViewById<View>(R.id.btn_simulator) as Button
         btnSimulator!!.setOnClickListener { appMainService!!.startSimulator() }
         btnDetectCameraModes = findViewById(R.id.btn_detect_camera_modes)
-        btnDetectCameraModes?.setOnClickListener { appMainService!!.testCameraModes() }
+        btnDetectCameraModes?.setOnClickListener {
+            appMainService!!.testCameraModes()
+            Toast.makeText(this,"Tests started. Please, wait",Toast.LENGTH_SHORT).show()
+        }
     
     }
 
