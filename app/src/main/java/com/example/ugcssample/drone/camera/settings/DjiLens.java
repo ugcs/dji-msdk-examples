@@ -1311,7 +1311,13 @@ public class DjiLens implements Lens {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<SettingsDefinitions.FocusMode> getFocusMode() {
-        return DjiToFutureAdapter.getFuture(djiLens::getFocusMode);
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getFocusMode);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getFocusMode);
+        }
+        return null;
     }
 
     @Override
@@ -2085,7 +2091,13 @@ public class DjiLens implements Lens {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<PointF> getFocusTarget() {
-        return DjiToFutureAdapter.getFuture(djiLens::getFocusTarget);
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getFocusTarget);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getFocusTarget);
+        }
+        return null;
     }
 
     @Override
@@ -2138,7 +2150,13 @@ public class DjiLens implements Lens {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<Integer> getFocusRingValue() {
-        return DjiToFutureAdapter.getFuture(djiLens::getFocusRingValue);
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getFocusRingValue);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getFocusRingValue);
+        }
+        return null;
     }
 
     @Override
@@ -2338,13 +2356,25 @@ public class DjiLens implements Lens {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<Integer> getThermalIsothermLowerValue() {
-        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermLowerValue);
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermLowerValue);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getThermalIsothermLowerValue);
+        }
+        return null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<Integer> getThermalIsothermUpperValue() {
-        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermUpperValue);
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermUpperValue);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getThermalIsothermUpperValue);
+        }
+        return null;
     }
 
     @Override
@@ -2405,7 +2435,13 @@ public class DjiLens implements Lens {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public CompletableFuture<Boolean> getThermalIsothermEnabled() {
-        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermEnabled);
+        if(djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermEnabled);
+        }
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::getThermalIsothermEnabled);
+        }
+        return null;
 //        return settings.thermalIsothermEnabled;
     }
 

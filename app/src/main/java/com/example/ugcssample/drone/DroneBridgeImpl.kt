@@ -2,13 +2,10 @@ package com.example.ugcssample.drone
 
 import android.Manifest
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbAccessory
 import android.location.LocationManager
-import android.os.Looper
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.drone.camera.Camera
@@ -41,7 +38,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.suspendCoroutine
 
 
 class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext), DroneBridge {
@@ -410,13 +406,15 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH_mm")
             val date = dateFormat.format(Date())
             val  report = testerListResults
-            FileWriter("${context.getExternalFilesDir(null)}/cam_test_report_${name}_$date.json").use { writer ->
+            val filePath = "${context.getExternalFilesDir(null)}/cam_test_report_${name}_$date.json"
+            FileWriter(filePath).use { writer ->
                 val gson = GsonBuilder().setPrettyPrinting().create()
                 gson.toJson(report, writer)
                 writer.flush()
                 writer.close()
             }
             intent.action = DroneActions.CAMERA_TESTS_FINISHED.toString()
+            intent.putExtra("file-path",filePath)
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     
         }

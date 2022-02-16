@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 DroneBridgeImpl.DroneActions.CAMERA_TESTS_FINISHED -> {
                     btnDetectCameraModes?.isEnabled = true
-                    tvStatus?.text = ("Tests finished. File dumped")
+                    tvStatus?.text = ("File dumped at\n${intent.getStringExtra("file-path")}")
                     Toast.makeText(context, "Tests finished. File dumped", Toast.LENGTH_SHORT).show()
                 }
             }
