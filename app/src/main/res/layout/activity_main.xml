@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
@@ -10,15 +11,21 @@
     <FrameLayout
         android:id="@+id/main_indicators_fragment_extra_distance"
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/black" />
+        android:layout_height="0dp"
+        android:background="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
         android:id="@+id/main_video_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/main_indicators_fragment_extra_distance"
-        android:elevation="1dp">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.example.ugcssample.fragment.VideoViewFragment
             android:id="@+id/video_view_primary_video_feed"
@@ -33,37 +40,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/main_indicators_fragment_extra_distance"
-        android:elevation="1000dp">
-        <Button
-            android:id="@+id/btn_simulator"
-            android:text="Start Simulator"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/main_video_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/btn_upload_mission"
-            android:text="Upload mission"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
-
-        <Button
-            android:id="@+id/btn_start_mission"
-            android:text="Start mission"
-            android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
         <Button
             android:id="@+id/btn_detect_camera_modes"
-            android:text="Detect camera modes"
+            android:layout_width="wrap_content"
             android:layout_height="70dp"
-            android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:enabled="false"
+            android:text="Start camera tests" />
+
     </LinearLayout>
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="#FFF"
+        android:padding="8dp"
+        android:text="Connect drone"
+        android:textColor="#000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

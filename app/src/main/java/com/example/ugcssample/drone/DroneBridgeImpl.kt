@@ -308,7 +308,7 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             }
         }
         val intent = Intent()
-        intent.action = ON_DRONE_CONNECTED
+        intent.action = DroneActions.ON_DRONE_CONNECTED.toString()
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }
 
@@ -340,6 +340,9 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             if (mProduct == null) "NULL" else "EXISTS"
                 )
         aircraft = null
+        val intent = Intent()
+        intent.action = DroneActions.ON_DRONE_DISCONNECTED.toString()
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }
 
     private fun deInitDroneUpdate() {
@@ -388,31 +391,34 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
     }
     val job = SupervisorJob()                               // (1)
     val scope = CoroutineScope(Dispatchers.Default + job)
-    val cameraTestCallback = { report: List<CameraTestResult> ->
-//        camerasReports += report+"\n\n"+"-".repeat(10)
-        val name = aircraft!!.model.displayName
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH_mm")
-        val date = dateFormat.format(Date())
     
-        FileWriter("${context.getExternalFilesDir(null)}/cam_test_report_${name}_$date.json").use { writer ->
-            val gson = GsonBuilder().setPrettyPrinting().create()
-            gson.toJson(report, writer)
-            writer.flush()
-            writer.close()
-        }
-        Looper.prepare()
-        Toast.makeText(context,"Tests finished. File dumped",Toast.LENGTH_SHORT).show()
-//        ToastUtils.showToast("Tests finished. File dumped")
-    }
 
     override fun testCameraModes() {
     
         scope.launch {
+            val intent = Intent()
+            val name = aircraft?.model?.displayName ?: throw IllegalStateException("Drone not connected")
+            intent.action = DroneActions.CAMERA_TESTS_STARTED.toString()
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+            val testerListResults = hashMapOf<String, List<CameraTestResult>>()
             for (camera in cameraSet) {
                 val tester = CameraTester(camera)
-                val res = tester.runTests()
-                cameraTestCallback.invoke(res)
+                tester.runTests()
+                testerListResults[tester.cameraName] = tester.results
             }
+            
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH_mm")
+            val date = dateFormat.format(Date())
+            val  report = testerListResults
+            FileWriter("${context.getExternalFilesDir(null)}/cam_test_report_${name}_$date.json").use { writer ->
+                val gson = GsonBuilder().setPrettyPrinting().create()
+                gson.toJson(report, writer)
+                writer.flush()
+                writer.close()
+            }
+            intent.action = DroneActions.CAMERA_TESTS_FINISHED.toString()
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+    
         }
     }
 
@@ -421,9 +427,14 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
         private const val BASE_LONGITUDE = 113.0
         private const val REFRESH_FREQ = 10
         private const val SATELLITE_COUNT = 10
-        const val ON_DRONE_CONNECTED = "ON_DRONE_CONNECTED"
     }
-
+    enum class DroneActions {
+        ON_DRONE_CONNECTED,
+        ON_DRONE_DISCONNECTED,
+        CAMERA_TESTS_STARTED,
+        CAMERA_TESTS_FINISHED,
+        
+    }
     init {
 
         // this.simulatorUpdateCallbackAndController

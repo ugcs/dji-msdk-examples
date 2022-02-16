@@ -4,16 +4,15 @@ import android.content.*
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.R
 import com.example.ugcssample.drone.DroneBridgeImpl
-import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.fragment.VideoViewFragment
 import com.example.ugcssample.services.DjiAppMainService
 import com.example.ugcssample.services.DjiAppMainServiceBinder
@@ -22,7 +21,6 @@ import com.example.ugcssample.utils.ArrayUtils
 import com.example.ugcssample.utils.PermissionUtils
 import dji.sdk.camera.VideoFeeder
 import timber.log.Timber
-import java.lang.reflect.Method
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -30,27 +28,43 @@ class MainActivity : AppCompatActivity() {
         const val REQUEST_PERMISSION_CODE = 2358
 
         init {
-            EVENT_FILTER.addAction(DroneBridgeImpl.ON_DRONE_CONNECTED)
+            DroneBridgeImpl.DroneActions.values().forEach { EVENT_FILTER.addAction(it.name) }
+            
         }
     }
 
     private var sIntent: Intent? = null
     private var sConn: ServiceConnection? = null
-    private var btnSimulator: Button? = null
     private var btnDetectCameraModes: Button? = null
+    private var tvStatus: TextView? = null
     protected var appMainService: DjiAppMainService? = null
     var broadcastManager: LocalBroadcastManager? = null
     private var primaryVideoFeedView: VideoViewFragment? = null
     private val eventReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action ?: return
-            if (DroneBridgeImpl.ON_DRONE_CONNECTED == action) {
-                btnSimulator!!.isEnabled = true
-                btnDetectCameraModes!!.isEnabled = true
-                primaryVideoFeedView!!.registerLiveVideo(
-                    VideoFeeder.getInstance().primaryVideoFeed,
-                    true
-                                                        )
+            when (DroneBridgeImpl.DroneActions.valueOf(action)) {
+                DroneBridgeImpl.DroneActions.ON_DRONE_CONNECTED -> {
+                    tvStatus?.text = ("Drone ready. Press 'Start Tests'")
+                    btnDetectCameraModes!!.isEnabled = true
+                    primaryVideoFeedView!!.registerLiveVideo(
+                        VideoFeeder.getInstance().primaryVideoFeed,
+                        true
+                                                            )
+                }
+                DroneBridgeImpl.DroneActions.ON_DRONE_DISCONNECTED -> {
+                    tvStatus?.text = ("Drone disconnected. Connect drone")
+                }
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_STARTED -> {
+                    btnDetectCameraModes?.isEnabled = false
+                    tvStatus?.text = ("Tests started. Please, wait")
+                    Toast.makeText(context,"Tests started. Please, wait",Toast.LENGTH_SHORT).show()
+                }
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_FINISHED -> {
+                    btnDetectCameraModes?.isEnabled = true
+                    tvStatus?.text = ("Tests finished. File dumped")
+                    Toast.makeText(context, "Tests finished. File dumped", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -70,12 +84,11 @@ class MainActivity : AppCompatActivity() {
         }
         primaryVideoFeedView =
             findViewById<View>(R.id.video_view_primary_video_feed) as VideoViewFragment
-        btnSimulator = findViewById<View>(R.id.btn_simulator) as Button
-        btnSimulator!!.setOnClickListener { appMainService!!.startSimulator() }
         btnDetectCameraModes = findViewById(R.id.btn_detect_camera_modes)
+        tvStatus = findViewById(R.id.tv_status)
         btnDetectCameraModes?.setOnClickListener {
             appMainService!!.testCameraModes()
-            Toast.makeText(this,"Tests started. Please, wait",Toast.LENGTH_SHORT).show()
+            
         }
     
     }

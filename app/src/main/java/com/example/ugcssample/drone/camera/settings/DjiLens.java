@@ -2,9 +2,12 @@ package com.example.ugcssample.drone.camera.settings;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
+import com.example.ugcssample.drone.DjiToFutureAdapter;
 import com.example.ugcssample.drone.camera.Lens;
 import com.example.ugcssample.drone.camera.settings.lens.AntiFlickerFrequency;
 import com.example.ugcssample.drone.camera.settings.lens.Aperture;
@@ -36,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -1032,37 +1036,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.antiFlickerFrequency(settings.antiFlicker);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setAntiFlickerFrequency(@NotNull AntiFlickerFrequency antiFlickerFrequency, Callback onSet) {
+    public CompletableFuture<Void> setAntiFlickerFrequency(@NotNull AntiFlickerFrequency antiFlickerFrequency) {
+        SettingsDefinitions.AntiFlickerFrequency sdkAntiFlickerFrequency = DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency);
         if (djiLens != null) {
-            djiLens.setAntiFlickerFrequency(DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency), djiError -> {
-                if (djiError == null) {
-                    setAntiFlickerFrequencyInternal(DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setAntiFlickerFrequency, sdkAntiFlickerFrequency);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setAntiFlickerFrequency(DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency), djiError -> {
-                if (djiError == null) {
-                    setAntiFlickerFrequencyInternal(DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setAntiFlickerFrequency, sdkAntiFlickerFrequency);
         }
+        return null;
     }
 
     @Override
@@ -1084,37 +1069,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.aperture(settings.aperture);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setAperture(@NonNull Aperture aperture, Callback onSet) {
+    public CompletableFuture<Void> setAperture(@NonNull Aperture aperture) {
+        SettingsDefinitions.Aperture sdkAperture = DjiLensValuesMapping.sdkAperture(aperture);
         if (djiLens != null) {
-            djiLens.setAperture(DjiLensValuesMapping.sdkAperture(aperture), djiError -> {
-                if (djiError == null) {
-                    setApertureInternal(DjiLensValuesMapping.sdkAperture(aperture));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setAperture, sdkAperture);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setAperture(DjiLensValuesMapping.sdkAperture(aperture), djiError -> {
-                if (djiError == null) {
-                    setApertureInternal(DjiLensValuesMapping.sdkAperture(aperture));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setAperture, sdkAperture);
         }
+        return null;
     }
 
     @Override
@@ -1163,37 +1129,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.displayMode(settings.displayMode);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setDisplayMode(@NotNull DisplayMode displayMode, Callback onSet) {
+    public CompletableFuture<Void> setDisplayMode(@NotNull DisplayMode displayMode) {
+        SettingsDefinitions.DisplayMode sdkDisplayMode = DjiLensValuesMapping.sdkDisplayMode(displayMode);
         if (djiLens != null) {
-            djiLens.setDisplayMode(DjiLensValuesMapping.sdkDisplayMode(displayMode), djiError -> {
-                if (djiError == null) {
-                    setDisplayModeInternal(DjiLensValuesMapping.sdkDisplayMode(displayMode));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setDisplayMode,sdkDisplayMode);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setDisplayMode(DjiLensValuesMapping.sdkDisplayMode(displayMode), djiError -> {
-                if (djiError == null) {
-                    setDisplayModeInternal(DjiLensValuesMapping.sdkDisplayMode(displayMode));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setDisplayMode,sdkDisplayMode);
         }
+        return null;
     }
 
     @Override
@@ -1229,37 +1176,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.exposureCompensation(settings.exposureCompensation);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setExposureCompensation(@NonNull ExposureCompensation exposureCompensation, Callback onSet) {
+    public CompletableFuture<Void> setExposureCompensation(@NonNull ExposureCompensation exposureCompensation) {
+        SettingsDefinitions.ExposureCompensation sdkExposureCompensation = DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation);
         if (djiLens != null) {
-            djiLens.setExposureCompensation(DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation), djiError -> {
-                if (djiError == null) {
-                    setExposureCompensationInternal(DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setExposureCompensation,sdkExposureCompensation);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setExposureCompensation(DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation), djiError -> {
-                if (djiError == null) {
-                    setExposureCompensationInternal(DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setExposureCompensation,sdkExposureCompensation);
         }
+        return null;
     }
 
     @Override
@@ -1325,37 +1253,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.exposureMode(settings.exposureMode);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setExposureMode(@NonNull ExposureMode exposureMode, Callback onSet) {
+    public CompletableFuture<Void> setExposureMode(@NonNull ExposureMode exposureMode) {
+        SettingsDefinitions.ExposureMode sdkExposureMode = DjiLensValuesMapping.sdkExposureMode(exposureMode);
         if (djiLens != null) {
-            djiLens.setExposureMode(DjiLensValuesMapping.sdkExposureMode(exposureMode), djiError -> {
-                if (djiError == null) {
-                    setExposureModeInternal(DjiLensValuesMapping.sdkExposureMode(exposureMode));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setExposureMode,sdkExposureMode);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setExposureMode(DjiLensValuesMapping.sdkExposureMode(exposureMode), djiError -> {
-                if (djiError == null) {
-                    setExposureModeInternal(DjiLensValuesMapping.sdkExposureMode(exposureMode));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setExposureMode,sdkExposureMode);
         }
+        return null;
     }
 
     @Override
@@ -1399,9 +1308,10 @@ public class DjiLens implements Lens {
         return new ArrayList<>();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public FocusMode getFocusMode() {
-        return DjiLensValuesMapping.focusMode(settings.focusMode);
+    public CompletableFuture<SettingsDefinitions.FocusMode> getFocusMode() {
+        return DjiToFutureAdapter.getFuture(djiLens::getFocusMode);
     }
 
     @Override
@@ -1456,37 +1366,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.iso(settings.iso);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setISO(@NonNull ISO iso, Callback onSet) {
+    public CompletableFuture<Void> setISO(@NonNull ISO iso) {
+        SettingsDefinitions.ISO sdkIso = DjiLensValuesMapping.sdkIso(iso);
         if (djiLens != null) {
-            djiLens.setISO(DjiLensValuesMapping.sdkIso(iso), djiError -> {
-                if (djiError == null) {
-                    setIsoInternal(DjiLensValuesMapping.sdkIso(iso));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setISO,sdkIso);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setISO(DjiLensValuesMapping.sdkIso(iso), djiError -> {
-                if (djiError == null) {
-                    setIsoInternal(DjiLensValuesMapping.sdkIso(iso));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setISO,sdkIso);
         }
+        return null;
     }
 
     @Override
@@ -2163,37 +2054,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.whiteBalance(settings.whiteBalance);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setWhiteBalance(@NonNull WhiteBalance whiteBalance, Callback onSet) {
+    public CompletableFuture<Void> setWhiteBalance(@NonNull WhiteBalance whiteBalance) {
+        dji.common.camera.WhiteBalance sdkWhiteBalance = DjiLensValuesMapping.sdkWhiteBalance(whiteBalance);
         if (djiLens != null) {
-            djiLens.setWhiteBalance(DjiLensValuesMapping.sdkWhiteBalance(whiteBalance), djiError -> {
-                if (djiError == null) {
-                    setWhiteBalanceInternal(DjiLensValuesMapping.sdkWhiteBalance(whiteBalance));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setWhiteBalance,sdkWhiteBalance);
         }
-
+    
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setWhiteBalance(DjiLensValuesMapping.sdkWhiteBalance(whiteBalance), djiError -> {
-                if (djiError == null) {
-                    setWhiteBalanceInternal(DjiLensValuesMapping.sdkWhiteBalance(whiteBalance));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setWhiteBalance,sdkWhiteBalance);
         }
+        return null;
     }
 
     @Override
@@ -2210,9 +2082,10 @@ public class DjiLens implements Lens {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public PointF getFocusTarget() {
-        return settings.focusTarget;
+    public CompletableFuture<PointF> getFocusTarget() {
+        return DjiToFutureAdapter.getFuture(djiLens::getFocusTarget);
     }
 
     @Override
@@ -2262,9 +2135,10 @@ public class DjiLens implements Lens {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public Integer getFocusRingValue() {
-        return settings.focusRingValue;
+    public CompletableFuture<Integer> getFocusRingValue() {
+        return DjiToFutureAdapter.getFuture(djiLens::getFocusRingValue);
     }
 
     @Override
@@ -2277,37 +2151,18 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.focusAssistantSettings(settings.focusAssistantSettings);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void setFocusAssistantSettings(@NonNull FocusAssistantSettings focusAssistantSettings, Callback onSet) {
+    public CompletableFuture<Void> setFocusAssistantSettings(@NonNull FocusAssistantSettings focusAssistantSettings) {
+        dji.common.camera.FocusAssistantSettings sdkFocusAssistantSettings = DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings);
         if (djiLens != null) {
-            djiLens.setFocusAssistantSettings(DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings), djiError -> {
-                if (djiError == null) {
-                    setFocusAssistantSettingsInternal(DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiLens::setFocusAssistantSettings, sdkFocusAssistantSettings);
         }
 
         if (djiSingleLensCamera != null) {
-            djiSingleLensCamera.setFocusAssistantSettings(DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings), djiError -> {
-                if (djiError == null) {
-                    setFocusAssistantSettingsInternal(DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings));
-                    if (onSet != null) {
-                        onSet.run(null);
-                    }
-                } else {
-                    if (onSet != null) {
-                        onSet.run(new Exception(djiError.getDescription()));
-                    }
-                }
-            });
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setFocusAssistantSettings, sdkFocusAssistantSettings);
         }
+        return null;
     }
 
     @Override
@@ -2480,14 +2335,16 @@ public class DjiLens implements Lens {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public Integer getThermalIsothermLowerValue() {
-        return settings.thermalIsothermLowerValue;
+    public CompletableFuture<Integer> getThermalIsothermLowerValue() {
+        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermLowerValue);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public Integer getThermalIsothermUpperValue() {
-        return settings.thermalIsothermUpperValue;
+    public CompletableFuture<Integer> getThermalIsothermUpperValue() {
+        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermUpperValue);
     }
 
     @Override
@@ -2545,9 +2402,11 @@ public class DjiLens implements Lens {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public Boolean getThermalIsothermEnabled() {
-        return settings.thermalIsothermEnabled;
+    public CompletableFuture<Boolean> getThermalIsothermEnabled() {
+        return DjiToFutureAdapter.getFuture(djiLens::getThermalIsothermEnabled);
+//        return settings.thermalIsothermEnabled;
     }
 
     @Override

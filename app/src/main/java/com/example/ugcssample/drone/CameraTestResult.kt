@@ -9,5 +9,5 @@ data class CameraTestResult(
         val value: String,
         val isSuccess: Boolean,
         val isDeclaredAsSupported: Boolean?,
-        val error: String
+        val error: String? = null
                            )

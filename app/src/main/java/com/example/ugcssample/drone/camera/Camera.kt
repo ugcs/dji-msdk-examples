@@ -1,6 +1,8 @@
 package com.example.ugcssample.drone.camera
 
+import android.graphics.PointF
 import com.example.ugcssample.drone.camera.settings.camera.*
+import dji.common.camera.SettingsDefinitions
 import dji.sdk.media.MediaManager
 
 interface Camera {
@@ -26,7 +28,7 @@ interface Camera {
      * If camera is initialised it returns null only if it is not supported by the camera.
      */
     open fun getCameraMode(): CameraMode?
-    open fun setCameraMode(cameraMode: CameraMode, onSet: Callback?)
+    open suspend fun setCameraMode(cameraMode: CameraMode)
     open fun addCameraModeChangeListener(listener: ValueChangeListener<CameraMode?>)
     open fun removeCameraModeChangeListener(listener: ValueChangeListener<CameraMode?>)
     open fun getSupportedCameraModes(): MutableList<CameraMode?>
@@ -36,7 +38,7 @@ interface Camera {
      * If camera is initialised it returns null only if it is not supported by the camera.
      */
     open fun getPhotoAEBCount(): PhotoAEBCount?
-    open fun setPhotoAEBCount(photoAEBCount: PhotoAEBCount, onSet: Callback?)
+    open suspend fun setPhotoAEBCount(photoAEBCount: PhotoAEBCount)
     open fun addPhotoAEBCountChangeListener(photoAEBCountChangeListener: ValueChangeListener<PhotoAEBCount?>)
     open fun removePhotoAEBCountChangeListener(photoAEBCountChangeListener: ValueChangeListener<PhotoAEBCount?>)
 
@@ -45,7 +47,7 @@ interface Camera {
      * If camera is initialised it returns null only if it is not supported by the camera.
      */
     open fun getPhotoBurstCount(): PhotoBurstCount?
-    open fun setPhotoBurstCount(photoBurstCount: PhotoBurstCount, onSet: Callback?)
+    suspend fun setPhotoBurstCount(photoBurstCount: PhotoBurstCount)
     open fun addPhotoBurstCountChangeListener(listener: ValueChangeListener<PhotoBurstCount?>)
     open fun removePhotoBurstCountChangeListener(listener: ValueChangeListener<PhotoBurstCount?>)
 
@@ -54,7 +56,7 @@ interface Camera {
      * If camera is initialised it returns null only if it is not supported by the camera.
      */
     open fun getPhotoTimeIntervalSettings(): PhotoTimeIntervalSettings?
-    open fun setPhotoTimeIntervalSettings(value: PhotoTimeIntervalSettings, onSet: Callback?)
+    suspend fun setPhotoTimeIntervalSettings(value: PhotoTimeIntervalSettings)
     open fun addPhotoTimeIntervalChangeListener(listener: ValueChangeListener<PhotoTimeIntervalSettings?>)
     open fun removePhotoTimeIntervalChangeListener(listener: ValueChangeListener<PhotoTimeIntervalSettings?>)
 
@@ -63,7 +65,7 @@ interface Camera {
      * If camera is initialised it returns null only if it is not supported by the camera.
      */
     open fun getShootPhotoMode(): ShootPhotoMode?
-    open fun setShootPhotoMode(mode: ShootPhotoMode, onSet: Callback?)
+    open suspend fun setShootPhotoMode(mode: ShootPhotoMode)
     open fun addShootPhotoModeChangeListener(listener: ValueChangeListener<ShootPhotoMode?>)
     open fun removeShootPhotoModeChangeListener(listener: ValueChangeListener<ShootPhotoMode?>)
     open fun getSupportedShootPhotoModes(): MutableList<ShootPhotoMode?>
@@ -140,4 +142,12 @@ interface Camera {
      */
     open fun getMediaManager(): MediaManager?
     open fun setXmpInformation(information: String?, onSet: Callback?)
+    
+    suspend fun getThermalIsothermEnabled() : Boolean
+    suspend fun getThermalIsothermLowerValue(): Int
+    suspend fun getThermalIsothermUpperValue(): Int
+    suspend fun getFocusAssistantSettings(): Pair<Boolean, Boolean>
+    suspend fun getFocusMode(): SettingsDefinitions.FocusMode?
+    suspend fun getFocusRingValue(): Int
+    suspend fun getFocusTarget(): PointF?
 }

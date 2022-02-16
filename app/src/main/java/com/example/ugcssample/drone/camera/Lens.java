@@ -27,6 +27,9 @@ import com.example.ugcssample.drone.camera.settings.lens.WhiteBalance;
 import com.example.ugcssample.drone.camera.settings.lens.ZoomDirection;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import dji.common.camera.SettingsDefinitions;
 
 @SuppressWarnings("unused")
 public interface Lens {
@@ -53,8 +56,8 @@ public interface Lens {
      */
     @Nullable
     AntiFlickerFrequency getAntiFlickerFrequency();
-
-    void setAntiFlickerFrequency(@NonNull AntiFlickerFrequency antiFlickerFrequency, Callback onSet);
+    
+    CompletableFuture<Void> setAntiFlickerFrequency(@NonNull AntiFlickerFrequency antiFlickerFrequency);
 
     void addAntiFlickerFrequencyListener(@NonNull ValueChangeListener<AntiFlickerFrequency> listener);
 
@@ -67,7 +70,7 @@ public interface Lens {
     @Nullable
     Aperture getAperture();
 
-    void setAperture(@NonNull Aperture aperture, Callback onSet);
+    CompletableFuture<Void> setAperture(@NonNull Aperture aperture);
 
     void addApertureChangeListener(@NonNull ValueChangeListener<Aperture> listener);
 
@@ -83,7 +86,7 @@ public interface Lens {
     @Nullable
     DisplayMode getDisplayMode();
 
-    void setDisplayMode(@NonNull DisplayMode displayMode, Callback onSet);
+    CompletableFuture<Void> setDisplayMode(@NonNull DisplayMode displayMode);
 
     void addDisplayModeChangeListener(@NonNull ValueChangeListener<DisplayMode> listener);
 
@@ -99,7 +102,7 @@ public interface Lens {
     @Nullable
     ExposureCompensation getExposureCompensation();
 
-    void setExposureCompensation(@NonNull ExposureCompensation exposureCompensation, Callback onSet);
+    CompletableFuture<Void> setExposureCompensation(@NonNull ExposureCompensation exposureCompensation);
 
     void addExposureCompensationChangeListener(@NonNull ValueChangeListener<ExposureCompensation> listener);
 
@@ -115,7 +118,7 @@ public interface Lens {
     @Nullable
     ExposureMode getExposureMode();
 
-    void setExposureMode(@NonNull ExposureMode exposureMode, Callback onSet);
+    CompletableFuture<Void> setExposureMode(@NonNull ExposureMode exposureMode);
 
     void addExposureModeChangeListener(@NonNull ValueChangeListener<ExposureMode> listener);
 
@@ -127,9 +130,10 @@ public interface Lens {
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    FocusMode getFocusMode();
+    CompletableFuture<SettingsDefinitions.FocusMode> getFocusMode();
 
     void setFocusMode(@NonNull FocusMode focusMode, Callback onSet);
 
@@ -144,7 +148,7 @@ public interface Lens {
     @Nullable
     ISO getISO();
 
-    void setISO(@NonNull ISO iso, Callback onSet);
+    CompletableFuture<Void> setISO(@NonNull ISO iso);
 
     void addISOChangeListener(@NonNull ValueChangeListener<ISO> listener);
 
@@ -272,7 +276,7 @@ public interface Lens {
     @Nullable
     WhiteBalance getWhiteBalance();
 
-    void setWhiteBalance(@NonNull WhiteBalance whiteBalance, Callback onSet);
+    CompletableFuture<Void> setWhiteBalance(@NonNull WhiteBalance whiteBalance);
 
     void addWhiteBalanceListener(@NonNull ValueChangeListener<WhiteBalance> listener);
 
@@ -281,9 +285,10 @@ public interface Lens {
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    PointF getFocusTarget();
+    CompletableFuture<PointF> getFocusTarget();
 
     void setFocusTarget(@NonNull PointF focusTarget, Callback onSet);
 
@@ -294,9 +299,10 @@ public interface Lens {
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    Integer getFocusRingValue();
+    CompletableFuture<Integer> getFocusRingValue();
 
     void setFocusRingValue(@NonNull Integer focusRingValue, Callback onSet);
 
@@ -318,7 +324,7 @@ public interface Lens {
     @Nullable
     FocusAssistantSettings getFocusAssistantSettings();
 
-    void setFocusAssistantSettings(@NonNull FocusAssistantSettings focusAssistantSettings, Callback onSet);
+    CompletableFuture<Void> setFocusAssistantSettings(@NonNull FocusAssistantSettings focusAssistantSettings);
 
     void addFocusAssistantSettingsListener(@NonNull ValueChangeListener<FocusAssistantSettings> listener);
 
@@ -335,16 +341,18 @@ public interface Lens {
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    Integer getThermalIsothermLowerValue();
+    CompletableFuture<Integer> getThermalIsothermLowerValue();
 
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    Integer getThermalIsothermUpperValue();
+    CompletableFuture<Integer> getThermalIsothermUpperValue();
 
     /**
      * Could return null if camera is not initialised.
@@ -365,9 +373,10 @@ public interface Lens {
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
+     * @return
      */
     @Nullable
-    Boolean getThermalIsothermEnabled();
+    CompletableFuture<Boolean> getThermalIsothermEnabled();
 
     /**
      * Callback is called immediately if camera is already initialised
@@ -421,5 +430,6 @@ public interface Lens {
     void zoomAtTarget(PointF point, Callback onZoom);
 
     void addOpticalFocalLengthListener(ValueChangeListener<Integer> valueChangeListener);
-
+    
+    
 }

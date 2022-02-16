@@ -1,311 +1,211 @@
 package com.example.ugcssample.drone
 
+import com.example.ugcssample.DJIErrorException
 import com.example.ugcssample.drone.camera.Camera
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.util.EnumSet.range
+import timber.log.Timber
+import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.suspendCoroutine
+import kotlin.reflect.KFunction0
+import kotlin.reflect.KSuspendFunction0
+import kotlin.reflect.KSuspendFunction1
+import kotlin.reflect.KFunction1
 
 class CameraTester(val camera : Camera) {
-
-    suspend fun runTests() : List<CameraTestResult> {
-        val results = mutableListOf<CameraTestResult>()
-        val cameraName = camera.getDisplayName()
+    val results = mutableListOf<CameraTestResult>()
+    val cameraName = camera.getDisplayName()
+    suspend fun runTests() {
+        results.clear()
+    
         val supportedCameraModes = camera.getSupportedCameraModes()
         for (mode in CameraMode.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                camera.setCameraMode(mode, object : Camera.Callback {
-                    override fun run(error: Exception?) {
-                        results.add(
-                            CameraTestResult(
-                                cameraName,
-                                "setCameraMode",
-                                mode.name,
-                                error == null,
-                                supportedCameraModes.contains(mode),
-                                error.toString()
-                                            )
-                                   )
-                        cont.resumeWith(Result.success(true))
-                    }
-                })
-            }
+            setValue(camera::setCameraMode, mode, supportedCameraModes.contains(mode))
         }
+        try {
+            camera.setCameraMode(CameraMode.SHOOT_PHOTO)
+        } catch (e: DJIErrorException) {
+            Timber.e("Unable to set CameraMode SHOOT_PHOTO")
+        }
+    
+    
         for (mode in PhotoAEBCount.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                camera.setPhotoAEBCount(mode, object : Camera.Callback {
-                    override fun run(error: Exception?) {
-                        results.add(
-                            CameraTestResult(
-                                cameraName,
-                                "setPhotoAEBCount",
-                                mode.name,
-                                error == null,
-                                false,
-                                error.toString()
-                                            )
-                                   )
-                        cont.resumeWith(Result.success(true))
-                    }
-                })
-            }
+            setValue(camera::setPhotoAEBCount, mode)
         }
         for (mode in PhotoBurstCount.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                camera.setPhotoBurstCount(mode, object : Camera.Callback {
-                    override fun run(error: Exception?) {
-                        results.add(
-                            CameraTestResult(
-                                cameraName,
-                                "setPhotoBurstCount",
-                                mode.name,
-                                error == null,
-                                false,
-                                error.toString()
-                                            )
-                                   )
-                        cont.resumeWith(Result.success(true))
-                    }
-                })
-            }
+            setValue(camera::setPhotoBurstCount, mode)
         }
+    
         for (count in 0..15) {
             for (interval in 0..10) {
-                suspendCoroutine<Boolean> { cont ->
-                    camera.setPhotoTimeIntervalSettings(PhotoTimeIntervalSettings(count, interval),
-                                                        object : Camera.Callback {
-                                                            override fun run(error: Exception?) {
-                                                                results.add(
-                                                                    CameraTestResult(
-                                                                        cameraName,
-                                                                        "setPhotoBurstCount",
-                                                                        "count=$count,interval=$interval",
-                                                                        error == null,
-                                                                        false,
-                                                                        error.toString()
-                                                                                    )
-                                                                           )
-                                                                cont.resumeWith(Result.success(true))
-                                                            }
-                                                        })
-                }
+                setValue(camera::setPhotoTimeIntervalSettings, PhotoTimeIntervalSettings(count, interval))
             }
         }
     
         for (mode in ShootPhotoMode.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                camera.setShootPhotoMode(mode, object : Camera.Callback {
-                    override fun run(error: Exception?) {
-                        results.add(
-                            CameraTestResult(
-                                cameraName,
-                                "setShootPhotoMode",
-                                mode.name,
-                                error == null,
-                                false,
-                                error.toString()
-                                            )
-                                   )
-                        cont.resumeWith(Result.success(true))
-                    }
-                })
-            }
+            setValue(camera::setShootPhotoMode, mode)
         }
-    
+        try {
+                camera.setShootPhotoMode(ShootPhotoMode.SINGLE)
+            } catch (e: DJIErrorException) {
+                Timber.w("Unable to set CameraMode SHOOT_PHOTO. Error: ${e.description}")
+            }
         val lens = camera.getActiveLens()
         val displayModes = lens.supportedDisplayModes
         for (mode in DisplayMode.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setDisplayMode(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setDisplayMode",
-                            mode.name,
-                            it == null,
-                            displayModes.contains(mode),
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setDisplayMode,mode,displayModes.contains(mode))
         }
     
         for (mode in AntiFlickerFrequency.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setAntiFlickerFrequency(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setAntiFlickerFrequency",
-                            mode.name,
-                            it == null,
-                            false,
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setAntiFlickerFrequency, mode)
         }
     
         val supportedApertures = lens.supportedApertures
         for (mode in Aperture.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setAperture(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setAperture",
-                            mode.name,
-                            it == null,
-                            supportedApertures.contains(mode),
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setAperture, mode,supportedApertures.contains(mode))
         }
     
         val supportedExposureModes = lens.supportedExposureModes
         for (mode in ExposureMode.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setExposureMode(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setExposureMode",
-                            mode.name,
-                            it == null,
-                            supportedExposureModes.contains(mode),
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setExposureMode, mode,supportedExposureModes.contains(mode))
         }
     
         val supportedExposureCompensations = lens.supportedExposureCompensations
         for (mode in ExposureCompensation.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setExposureCompensation(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setExposureCompensation",
-                            mode.name,
-                            it == null,
-                            supportedExposureCompensations.contains(mode),
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setExposureCompensation, mode,supportedExposureCompensations.contains(mode))
+            
         }
-        suspendCoroutine<Boolean> { cont ->
-            lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = false, enabledAF = false)) {
-                results.add(
-                    CameraTestResult(
-                        cameraName,
-                        "Lens.setFocusAssistantSettings",
-                        "enabledMF=false,enabledAF=false",
-                        it == null,
-                        false,
-                        it.toString()
-                                    )
-                           )
-                cont.resumeWith(Result.success(true))
-            }
-        }
-        suspendCoroutine<Boolean> { cont ->
-            lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = true, enabledAF = false)) {
-                results.add(
-                    CameraTestResult(
-                        cameraName,
-                        "Lens.setFocusAssistantSettings",
-                        "enabledMF=true,enabledAF=false",
-                        it == null,
-                        false,
-                        it.toString()
-                                    )
-                           )
-                cont.resumeWith(Result.success(true))
-            }
-        }
-        suspendCoroutine<Boolean> { cont ->
-            lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = false, enabledAF = true)) {
-                results.add(
-                    CameraTestResult(
-                        cameraName,
-                        "Lens.setFocusAssistantSettings",
-                        "enabledMF=false,enabledAF=true",
-                        it == null,
-                        false,
-                        it.toString()
-                                    )
-                           )
-                cont.resumeWith(Result.success(true))
-            }
-        }
-        suspendCoroutine<Boolean> { cont ->
-            lens.setFocusAssistantSettings(FocusAssistantSettings(enabledMF = true, enabledAF = true)) {
-                results.add(
-                    CameraTestResult(
-                        cameraName,
-                        "Lens.setFocusAssistantSettings",
-                        "enabledMF=true,enabledAF=true",
-                        it == null,
-                        false,
-                        it.toString()
-                                    )
-                           )
-                cont.resumeWith(Result.success(true))
-            }
-        }
-    
+        setValueFeature(lens::setFocusAssistantSettings, FocusAssistantSettings(enabledMF = false, enabledAF = false))
+        setValueFeature(lens::setFocusAssistantSettings, FocusAssistantSettings(enabledMF = true, enabledAF = false))
+        setValueFeature(lens::setFocusAssistantSettings, FocusAssistantSettings(enabledMF = false, enabledAF = true))
+        setValueFeature(lens::setFocusAssistantSettings, FocusAssistantSettings(enabledMF = true, enabledAF = true))
+        
         val supportedISOs = lens.supportedISOs
         for (mode in ISO.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setISO(mode) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setISO",
-                            mode.name,
-                            it == null,
-                            supportedISOs.contains(mode),
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setISO,mode,supportedISOs.contains(mode))
         }
-        
         for (mode in WhiteBalance.WhiteBalancePreset.values()) {
-            suspendCoroutine<Boolean> { cont ->
-                lens.setWhiteBalance(WhiteBalance(mode)) {
-                    results.add(
-                        CameraTestResult(
-                            cameraName,
-                            "Lens.setWhiteBalance",
-                            mode.name,
-                            it == null,
-                            false,
-                            it.toString()
-                                        )
-                               )
-                    cont.resumeWith(Result.success(true))
-                }
-            }
+            setValueFeature(lens::setWhiteBalance, WhiteBalance(mode))
         }
-        return results
+        getValue(camera::getThermalIsothermEnabled)
+        getValue(camera::getThermalIsothermLowerValue)
+        getValue(camera::getThermalIsothermUpperValue)
+        getValue(camera::getFocusAssistantSettings)
+        getValue(camera::getFocusMode)
+        getValue(camera::getFocusRingValue)
+        getValue(camera::getFocusTarget)
+        getValueFeature(lens::getThermalIsothermEnabled)
+    
+        getValueFeature(lens::getThermalIsothermEnabled)
+        getValueFeature(lens::getThermalIsothermLowerValue)
+        getValueFeature(lens::getThermalIsothermUpperValue)
+//        getValue(camera::getFocusAssistantSettings)
+        getValueFeature(lens::getFocusMode)
+        getValueFeature(lens::getFocusRingValue)
+        getValueFeature(lens::getFocusTarget)
+    
     }
-
+    private suspend fun <P0> setValue(method : KSuspendFunction1<P0, Unit>, arg0 : P0) = setValue(method, arg0, false)
+    private suspend fun <P0> setValue(method : KSuspendFunction1<P0, Unit>, arg0 : P0, isSupported : Boolean) {
+        try {
+            method(arg0)
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    "${method.javaClass}.${method.name}",
+                    arg0.toString(),
+                    true,
+                    isSupported
+                                )
+                       )
+        } catch (e: DJIErrorException) {
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    "${method.javaClass}.${method.name}",
+                    arg0.toString(),
+                    false,
+                    isSupported,
+                    e.description
+                                )
+                       )
+        }
+    }
+    private suspend fun <R> getValue(method : KSuspendFunction0<R>, isSupported: Boolean){
+        try {
+            val res : R? = method()
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    method.name,
+                    res?.toString() ?: "UNKNOWN",
+                    true,
+                    isSupported
+                                )
+                       )
+        } catch (e: DJIErrorException) {
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    method.name,
+                    "UNKNOWN",
+                    false,
+                    isSupported,
+                    e.description
+                                )
+                       )
+        }
+    }
+    private suspend fun <R> getValue(method : KSuspendFunction0<R>) = getValue(method, false)
+    private fun <R> getValueFeature(method : KFunction0<R>){
+        try {
+            val res : R? = method()
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    method.name,
+                    res?.toString() ?: "UNKNOWN",
+                    true,
+                    false
+                                )
+                       )
+        } catch (e: DJIErrorException) {
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    method.name,
+                    "UNKNOWN",
+                    false,
+                    false,
+                    e.description
+                                )
+                       )
+        }
+    }
+    private fun <P0> setValueFeature(method : KFunction1<P0, CompletableFuture<Void>>, arg0 : P0) = setValueFeature(method,arg0,false)
+    private fun <P0> setValueFeature(method : KFunction1<P0, CompletableFuture<Void>>, arg0 : P0, isSupported : Boolean) {
+        try {
+            method(arg0)
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    "${method.javaClass}.${method.name}",
+                    arg0.toString(),
+                    true,
+                    isSupported
+                                )
+                       )
+        } catch (e: DJIErrorException) {
+            results.add(
+                CameraTestResult(
+                    cameraName,
+                    "${method.javaClass}.${method.name}",
+                    arg0.toString(),
+                    false,
+                    isSupported,
+                    e.description
+                                )
+                       )
+        }
+    }
 }

@@ -1,11 +1,15 @@
 package com.example.ugcssample.drone.camera
 
 import android.content.Context
+import android.graphics.PointF
 import com.example.ugcssample.BuildConfig
 import com.example.ugcssample.drone.camera.settings.DjiCameraSettings
 import com.example.ugcssample.drone.camera.settings.DjiLens
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.LensType
+import com.example.ugcssample.drone.suspendCoroutineCompletion
+import com.example.ugcssample.drone.suspendCoroutineTwo
+import com.example.ugcssample.drone.suspendCoroutine as DjiSuspend
 import dji.common.camera.CameraVideoStreamSource
 import dji.common.camera.SettingsDefinitions
 import dji.common.camera.SystemState
@@ -16,6 +20,7 @@ import dji.keysdk.CameraKey
 import dji.keysdk.KeyManager
 import dji.sdk.media.MediaManager
 import timber.log.Timber
+import java.lang.NullPointerException
 import java.util.*
 
 class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
@@ -227,20 +232,10 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         return DjiCameraValueMapping.cameraMode(settings.cameraMode)
     }
 
-    override fun setCameraMode(cameraMode: CameraMode, onSet: Camera.Callback?) {
+    override suspend fun setCameraMode(cameraMode: CameraMode) {
         DjiCameraValueMapping.sdkCameraMode(cameraMode)?.let {
-            djiCamera?.setMode(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    setCameraModeInternal(
-                        DjiCameraValueMapping.sdkCameraMode(
-                            cameraMode
-                                                           )
-                                         )
-                    onSet?.run(null)
-                }
-            }
+            suspendCoroutineCompletion(djiCamera!!::setMode, it)
+            
         }
     }
 
@@ -264,25 +259,15 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         }
         return modes
     }
-
+    
     override fun getPhotoAEBCount(): PhotoAEBCount? {
         return DjiCameraValueMapping.photoAEBCount(settings.photoAEBCount)
     }
 
-    override fun setPhotoAEBCount(photoAEBCount: PhotoAEBCount, onSet: Camera.Callback?) {
+    override suspend fun setPhotoAEBCount(photoAEBCount: PhotoAEBCount) {
         DjiCameraValueMapping.sdkPhotoAEBCount(photoAEBCount)?.let {
-            djiCamera?.setPhotoAEBCount(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    setAebCountInternal(
-                        DjiCameraValueMapping.sdkPhotoAEBCount(
-                            photoAEBCount
-                                                              )
-                                       )
-                    onSet?.run(null)
-                }
-            }
+            suspendCoroutineCompletion(djiCamera!!::setPhotoAEBCount, it)
+            
         }
     }
 
@@ -310,20 +295,12 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         return DjiCameraValueMapping.photoBurstCount(settings.photoBurstCount)
     }
 
-    override fun setPhotoBurstCount(photoBurstCount: PhotoBurstCount, onSet: Camera.Callback?) {
+    override suspend fun setPhotoBurstCount(photoBurstCount: PhotoBurstCount) {
         DjiCameraValueMapping.sdkPhotoBurstCount(photoBurstCount)?.let {
-            djiCamera?.setPhotoBurstCount(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    setPhotoBurstCountInternal(
-                        DjiCameraValueMapping.sdkPhotoBurstCount(
-                            photoBurstCount
-                                                                )
-                                              )
-                    onSet?.run(null)
-                }
+            if (djiCamera != null) {
+                suspendCoroutineCompletion(djiCamera::setPhotoBurstCount, it)
             }
+    
         }
     }
 
@@ -343,22 +320,10 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         return DjiCameraValueMapping.photoTimeIntervalSettings(settings.photoTimeIntervalSettings)
     }
 
-    override fun setPhotoTimeIntervalSettings(
-        value: PhotoTimeIntervalSettings,
-        onSet: Camera.Callback?
-                                             ) {
+    override suspend fun setPhotoTimeIntervalSettings(value: PhotoTimeIntervalSettings) {
         DjiCameraValueMapping.sdkPhotoTimeIntervalSettings(value)?.let {
-            djiCamera?.setPhotoTimeIntervalSettings(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    setPhotoTimeIntervalSettingsInternal(
-                        DjiCameraValueMapping.sdkPhotoTimeIntervalSettings(
-                            value
-                                                                          )
-                                                        )
-                    onSet?.run(null)
-                }
+            if (djiCamera != null) {
+                suspendCoroutineCompletion(djiCamera::setPhotoTimeIntervalSettings, it)
             }
         }
     }
@@ -387,23 +352,12 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         return DjiCameraValueMapping.shootPhotoMode(settings.shootPhotoMode)
     }
 
-    override fun setShootPhotoMode(mode: ShootPhotoMode, onSet: Camera.Callback?) {
+    override suspend fun setShootPhotoMode(mode: ShootPhotoMode) {
         DjiCameraValueMapping.sdkShootPhotoMode(mode)?.let {
-            djiCamera?.setShootPhotoMode(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    setPhotoModeInternal(
-                        DjiCameraValueMapping.sdkShootPhotoMode(
-                            mode
-                                                               )
-                                        )
-                    onSet?.run(null)
-                }
-            }
-        }
+            suspendCoroutineCompletion(djiCamera!!::setShootPhotoMode, it)
+        } ?: throw NullPointerException("Shoot Photo Mode not found for $mode")
     }
-
+    
     override fun addShootPhotoModeChangeListener(listener: Camera.ValueChangeListener<ShootPhotoMode?>) {
         if (photoModeChangeListeners != null) {
             synchronized(photoModeChangeListeners) { photoModeChangeListeners.add(listener) }
@@ -1016,4 +970,14 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         }
         initSettings()
     }
+    
+    override suspend fun getThermalIsothermEnabled() : Boolean = DjiSuspend(djiCamera!!::getThermalIsothermEnabled)
+    override suspend fun getThermalIsothermLowerValue() : Int = DjiSuspend(djiCamera!!::getThermalIsothermLowerValue)
+    override suspend fun getThermalIsothermUpperValue() : Int = DjiSuspend(djiCamera!!::getThermalIsothermUpperValue)
+    override suspend fun getFocusAssistantSettings() : Pair<Boolean, Boolean> = suspendCoroutineTwo(djiCamera!!::getFocusAssistantSettings)
+    override suspend fun getFocusMode() : SettingsDefinitions.FocusMode? = DjiSuspend(djiCamera!!::getFocusMode)
+    override suspend fun getFocusRingValue() : Int = DjiSuspend(djiCamera!!::getFocusRingValue)
+    override suspend fun getFocusTarget() : PointF? = DjiSuspend(djiCamera!!::getFocusTarget)
+    
+    
 }
