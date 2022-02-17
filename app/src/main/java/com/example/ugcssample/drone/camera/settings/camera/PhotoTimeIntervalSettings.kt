@@ -8,4 +8,6 @@ class PhotoTimeIntervalSettings(
     companion object {
         const val MAX_INTERVALED_CAPTURE_CNT = 255
     }
+    
+    override fun toString(): String = "captureCount: $captureCount, timeIntervalInSeconds: $timeIntervalInSeconds"
 }

@@ -30,4 +30,6 @@ class WhiteBalance {
     fun getColorTemperature(): Int {
         return temperature
     }
+    
+    override fun toString(): String = "whiteBalancePreset: $whiteBalancePreset, temperature: $temperature"
 }

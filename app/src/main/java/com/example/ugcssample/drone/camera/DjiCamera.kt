@@ -204,20 +204,15 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
         return HashSet(lenses?.values)
     }
 
-    override fun setActiveLens(lensId: Int, onSet: Camera.Callback?) {
-        require(lenses?.containsKey(lensId) == true) { "There is no lens with specified id in the lenses set" }
-        currentLensId = lensId
-        DjiCameraValueMapping.sourceFromLensType(
-            Objects.requireNonNull(lenses?.get(lensId))?.getType())?.let {
-            djiCamera?.setCameraVideoStreamSource(it) { djiError: DJIError? ->
-                if (djiError != null) {
-                    onSet?.run(Exception(djiError.description))
-                } else {
-                    onSet?.run(null)
-                }
+    override suspend fun setActiveLens(lens : Lens) {
+        currentLensId = lens.id
+        val sourceFromLensType = DjiCameraValueMapping.sourceFromLensType(lens.type)
+        sourceFromLensType?.let {
+            if (djiCamera != null) {
+                suspendCoroutineCompletion(djiCamera::setCameraVideoStreamSource, it)
                 synchronized(activeLensChangeListeners) {
                     for (listener in activeLensChangeListeners) {
-                        listener?.run(lenses?.get(lensId))
+                        listener?.run(lens)
                     }
                 }
             }

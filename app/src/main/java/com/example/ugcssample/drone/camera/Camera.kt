@@ -20,7 +20,7 @@ interface Camera {
 
     open fun isSingleLens(): Boolean
     open fun getLenses(): MutableSet<Lens?>
-    open fun setActiveLens(lensId: Int, onSet: Callback?)
+    open suspend fun setActiveLens(lens : Lens)
     open fun getActiveLens(): Lens
 
     /**

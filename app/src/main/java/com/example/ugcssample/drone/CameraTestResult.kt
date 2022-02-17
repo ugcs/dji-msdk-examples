@@ -4,7 +4,6 @@ import kotlinx.serialization.*
 
 @Serializable
 data class CameraTestResult(
-        val cameraName: String,
         val setting: String,
         val value: String,
         val isSuccess: Boolean,

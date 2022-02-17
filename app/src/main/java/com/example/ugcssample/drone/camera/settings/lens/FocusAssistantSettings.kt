@@ -8,4 +8,6 @@ class FocusAssistantSettings(private val enabledMF: Boolean, private val enabled
     fun isEnabledMF(): Boolean {
         return enabledMF
     }
+    
+    override fun toString(): String = "enabledMF: $enabledMF, enabledAF: $enabledAF"
 }
