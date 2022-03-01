@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi;
 
 import com.example.ugcssample.drone.DjiToFutureAdapter;
 import com.example.ugcssample.drone.camera.Lens;
+import com.example.ugcssample.drone.camera.settings.camera.FlatCameraMode;
 import com.example.ugcssample.drone.camera.settings.lens.AntiFlickerFrequency;
 import com.example.ugcssample.drone.camera.settings.lens.Aperture;
 import com.example.ugcssample.drone.camera.settings.lens.DisplayMode;
@@ -24,6 +25,7 @@ import com.example.ugcssample.drone.camera.settings.lens.OpticalZoomSpec;
 import com.example.ugcssample.drone.camera.settings.lens.PhotoAspectRatio;
 import com.example.ugcssample.drone.camera.settings.lens.PhotoFileFormat;
 import com.example.ugcssample.drone.camera.settings.lens.ShutterSpeed;
+import com.example.ugcssample.drone.camera.settings.lens.ThermalDigitalZoomFactor;
 import com.example.ugcssample.drone.camera.settings.lens.VideoFileFormat;
 import com.example.ugcssample.drone.camera.settings.lens.VideoFrameRate;
 import com.example.ugcssample.drone.camera.settings.lens.VideoResolution;
@@ -52,6 +54,7 @@ import dji.common.util.CommonCallbacks;
 import dji.keysdk.CameraKey;
 import dji.keysdk.KeyManager;
 import dji.sdk.camera.Camera;
+import dji.sdk.camera.Capabilities;
 import timber.log.Timber;
 
 
@@ -1128,6 +1131,30 @@ public class DjiLens implements Lens {
         return new ArrayList<>();
     }
 
+    @NonNull
+    @Override
+    public List<FlatCameraMode> getSupportedFlatCameraModes() {
+        Capabilities capabilities = null;
+        if (djiMultiLensCamera != null) {
+            capabilities = djiMultiLensCamera.getCapabilities();
+        }
+        if (djiSingleLensCamera != null) {
+            capabilities = djiSingleLensCamera.getCapabilities();
+        }
+        if (capabilities != null) {
+            SettingsDefinitions.FlatCameraMode[] modes = capabilities.FlatCameraModeRange();
+            List<FlatCameraMode> result = new ArrayList<>();
+            if (modes != null) {
+                for (SettingsDefinitions.FlatCameraMode mode : modes) {
+                    result.add(FlatCameraMode.Companion.fromDji(mode));
+                }
+            }
+            return result;
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
     @Override
     public DisplayMode getDisplayMode() {
         return DjiLensValuesMapping.displayMode(settings.displayMode);
@@ -2113,6 +2140,17 @@ public class DjiLens implements Lens {
         }
         return null;
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public boolean isThermalLens() {
+        if (djiLens != null) {
+            return djiLens.isThermalLens();
+        }
+        if (djiSingleLensCamera != null) {
+            return djiSingleLensCamera.isThermalCamera();
+        }
+        return false;
+    }
 
     @Override
     public void setFocusTarget(@NonNull PointF focusTarget, Callback onSet) {
@@ -2146,7 +2184,20 @@ public class DjiLens implements Lens {
             });
         }
     }
-
+    
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public CompletableFuture<Void> setThermalDigitalZoomFactor(@NonNull ThermalDigitalZoomFactor factor) {
+        SettingsDefinitions.ThermalDigitalZoomFactor thermalDigitalZoomFactor = factor.toDji();
+        if (djiLens != null) {
+            return DjiToFutureAdapter.getFuture(djiLens::setThermalDigitalZoomFactor,thermalDigitalZoomFactor);
+        }
+        
+        if (djiSingleLensCamera != null) {
+            return DjiToFutureAdapter.getFuture(djiSingleLensCamera::setThermalDigitalZoomFactor,thermalDigitalZoomFactor);
+        }
+        return null;
+    }
     @Override
     public void addFocusTargetListener(@NonNull ValueChangeListener<PointF> listener) {
         synchronized (focusTargetChangeListeners) {

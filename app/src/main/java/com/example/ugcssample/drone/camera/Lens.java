@@ -1,10 +1,13 @@
 package com.example.ugcssample.drone.camera;
 
 import android.graphics.PointF;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
+import com.example.ugcssample.drone.camera.settings.camera.FlatCameraMode;
 import com.example.ugcssample.drone.camera.settings.lens.AntiFlickerFrequency;
 import com.example.ugcssample.drone.camera.settings.lens.Aperture;
 import com.example.ugcssample.drone.camera.settings.lens.DisplayMode;
@@ -21,6 +24,7 @@ import com.example.ugcssample.drone.camera.settings.lens.PhotoAspectRatio;
 import com.example.ugcssample.drone.camera.settings.lens.PhotoFileFormat;
 import com.example.ugcssample.drone.camera.settings.lens.ResolutionAndFrameRate;
 import com.example.ugcssample.drone.camera.settings.lens.ShutterSpeed;
+import com.example.ugcssample.drone.camera.settings.lens.ThermalDigitalZoomFactor;
 import com.example.ugcssample.drone.camera.settings.lens.VideoFileFormat;
 import com.example.ugcssample.drone.camera.settings.lens.VideoStandard;
 import com.example.ugcssample.drone.camera.settings.lens.WhiteBalance;
@@ -78,7 +82,10 @@ public interface Lens {
 
     @NonNull
     List<Aperture> getSupportedApertures();
-
+    
+    @NonNull
+    List<FlatCameraMode> getSupportedFlatCameraModes();
+    
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.
@@ -289,9 +296,15 @@ public interface Lens {
      */
     @Nullable
     CompletableFuture<PointF> getFocusTarget();
-
+    
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    boolean isThermalLens();
+    
     void setFocusTarget(@NonNull PointF focusTarget, Callback onSet);
-
+    
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    CompletableFuture<Void> setThermalDigitalZoomFactor(@NonNull ThermalDigitalZoomFactor factor);
+    
     void addFocusTargetListener(@NonNull ValueChangeListener<PointF> listener);
 
     void removeFocusTargetListener(@NonNull ValueChangeListener<PointF> listener);

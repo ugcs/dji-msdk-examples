@@ -2,6 +2,7 @@ package com.example.ugcssample.drone.camera
 
 import android.graphics.PointF
 import com.example.ugcssample.drone.camera.settings.camera.*
+import com.example.ugcssample.drone.camera.settings.lens.ThermalDigitalZoomFactor
 import dji.common.camera.SettingsDefinitions
 import dji.sdk.media.MediaManager
 
@@ -150,4 +151,8 @@ interface Camera {
     suspend fun getFocusMode(): SettingsDefinitions.FocusMode?
     suspend fun getFocusRingValue(): Int
     suspend fun getFocusTarget(): PointF?
+    suspend fun isFlatCameraModeSupported(): Boolean?
+    suspend fun setFlatMode(flatCameraMode: FlatCameraMode)
+    suspend fun isThermalCamera(): Boolean?
+    suspend fun setThermalDigitalZoomFactor(thermalDigitalZoomFactor: ThermalDigitalZoomFactor)
 }

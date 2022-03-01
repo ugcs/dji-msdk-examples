@@ -7,6 +7,7 @@ import com.example.ugcssample.drone.camera.settings.DjiCameraSettings
 import com.example.ugcssample.drone.camera.settings.DjiLens
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.LensType
+import com.example.ugcssample.drone.camera.settings.lens.ThermalDigitalZoomFactor
 import com.example.ugcssample.drone.suspendCoroutineCompletion
 import com.example.ugcssample.drone.suspendCoroutineTwo
 import com.example.ugcssample.drone.suspendCoroutine as DjiSuspend
@@ -14,7 +15,6 @@ import dji.common.camera.CameraVideoStreamSource
 import dji.common.camera.SettingsDefinitions
 import dji.common.camera.SystemState
 import dji.common.error.DJIError
-import dji.common.util.CommonCallbacks.CompletionCallback
 import dji.common.util.CommonCallbacks.CompletionCallbackWith
 import dji.keysdk.CameraKey
 import dji.keysdk.KeyManager
@@ -973,6 +973,18 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
     override suspend fun getFocusMode() : SettingsDefinitions.FocusMode? = DjiSuspend(djiCamera!!::getFocusMode)
     override suspend fun getFocusRingValue() : Int = DjiSuspend(djiCamera!!::getFocusRingValue)
     override suspend fun getFocusTarget() : PointF? = DjiSuspend(djiCamera!!::getFocusTarget)
-    
-    
+    override suspend fun isFlatCameraModeSupported() : Boolean? = djiCamera?.isFlatCameraModeSupported
+    override suspend fun isThermalCamera() : Boolean? = djiCamera?.isThermalCamera
+    override suspend fun setFlatMode(flatCameraMode: FlatCameraMode) {
+        val sdkFlatCameraMode = flatCameraMode.toDji()
+        if (djiCamera != null) {
+            suspendCoroutineCompletion(djiCamera::setFlatMode, sdkFlatCameraMode)
+        }
+    }
+    override suspend fun setThermalDigitalZoomFactor(thermalDigitalZoomFactor: ThermalDigitalZoomFactor) {
+        val sdkThermalDigitalZoomFactor = thermalDigitalZoomFactor.toDji()
+        if (djiCamera != null) {
+            suspendCoroutineCompletion(djiCamera::setThermalDigitalZoomFactor, sdkThermalDigitalZoomFactor)
+        }
+    }
 }

@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbAccessory
 import android.location.LocationManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.ugcssample.drone.camera.Camera
@@ -389,6 +391,7 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
     val scope = CoroutineScope(Dispatchers.Default + job)
     
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun testCameraModes() {
     
         scope.launch {
@@ -396,11 +399,11 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             val name = aircraft?.model?.displayName ?: throw IllegalStateException("Drone not connected")
             intent.action = DroneActions.CAMERA_TESTS_STARTED.toString()
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
-            val testerListResults = hashMapOf<String, List<CameraTestResult>>()
+            val testerListResults = mutableListOf<CameraResultsInfo>()
             for (camera in cameraSet) {
                 val tester = CameraTester(camera)
-                tester.runTests()
-                testerListResults[tester.cameraName] = tester.results
+                val results = tester.runTests()
+                testerListResults.add(results)
             }
             
             val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH_mm")
