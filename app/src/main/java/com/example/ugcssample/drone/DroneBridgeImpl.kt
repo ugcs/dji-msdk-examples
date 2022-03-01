@@ -389,7 +389,12 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
     }
     val job = SupervisorJob()                               // (1)
     val scope = CoroutineScope(Dispatchers.Default + job)
-    
+    val onProgressCallback : (Int)->Unit = { testIndex : Int ->
+        val intent = Intent()
+        intent.action = DroneActions.CAMERA_TESTS_PROGRESS.toString()
+        intent.putExtra("test-index",testIndex)
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+    }
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun testCameraModes() {
@@ -401,7 +406,7 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
             val testerListResults = mutableListOf<CameraResultsInfo>()
             for (camera in cameraSet) {
-                val tester = CameraTester(camera)
+                val tester = CameraTester(camera, onProgressCallback)
                 val results = tester.runTests()
                 testerListResults.add(results)
             }
@@ -433,6 +438,7 @@ class DroneBridgeImpl(private val mContext: Context) : DroneBridgeBase(mContext)
         ON_DRONE_CONNECTED,
         ON_DRONE_DISCONNECTED,
         CAMERA_TESTS_STARTED,
+        CAMERA_TESTS_PROGRESS,
         CAMERA_TESTS_FINISHED,
         
     }

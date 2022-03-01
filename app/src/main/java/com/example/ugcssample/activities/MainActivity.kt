@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
                     tvStatus?.text = ("Tests started. Please, wait")
                     Toast.makeText(context,"Tests started. Please, wait",Toast.LENGTH_SHORT).show()
                 }
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_PROGRESS -> {
+                    tvStatus?.text = ("Tests running. Test #${intent.getIntExtra("test-index", -1)}")
+                }
                 DroneBridgeImpl.DroneActions.CAMERA_TESTS_FINISHED -> {
                     btnDetectCameraModes?.isEnabled = true
                     tvStatus?.text = ("File dumped at\n${intent.getStringExtra("file-path")}")
