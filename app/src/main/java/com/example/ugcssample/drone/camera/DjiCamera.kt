@@ -222,7 +222,8 @@ class DjiCamera(camera: dji.sdk.camera.Camera?, context: Context?) : Camera {
     override fun getActiveLens(): Lens {
         return lenses?.get(currentLensId)!!
     }
-
+    
+    override fun getDjiCamera(): dji.sdk.camera.Camera? = djiCamera
     override fun getCameraMode(): CameraMode? {
         return DjiCameraValueMapping.cameraMode(settings.cameraMode)
     }

@@ -4,6 +4,7 @@ import android.graphics.PointF
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.ThermalDigitalZoomFactor
 import dji.common.camera.SettingsDefinitions
+import dji.sdk.camera.Camera
 import dji.sdk.media.MediaManager
 
 interface Camera {
@@ -23,7 +24,7 @@ interface Camera {
     open fun getLenses(): MutableSet<Lens?>
     open suspend fun setActiveLens(lens : Lens)
     open fun getActiveLens(): Lens
-
+    open fun getDjiCamera() : Camera?
     /**
      * Could return null if camera is not initialised.
      * If camera is initialised it returns null only if it is not supported by the camera.

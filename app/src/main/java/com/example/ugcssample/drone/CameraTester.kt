@@ -7,7 +7,8 @@ import com.example.ugcssample.drone.camera.Camera
 import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.*
-import dji.common.camera.SettingsDefinitions
+import com.example.ugcssample.drone.camera.settings.lens.ResolutionAndFrameRate as ResolutionAndFrameRateModel
+import dji.common.camera.ResolutionAndFrameRate
 import dji.keysdk.CameraKey
 import dji.sdk.sdkmanager.DJISDKManager
 import timber.log.Timber
@@ -56,22 +57,32 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                           )
             }
         }
+        testKeymanagerData(CameraKey.VIDEO_FILE_FORMAT_RANGE)
+        testKeymanagerData(CameraKey.PHOTO_FILE_FORMAT_RANGE)
+        testKeymanagerData(CameraKey.VIDEO_STANDARD_RANGE)
+        testKeymanagerData(CameraKey.PHOTO_ASPECT_RATIO_RANGE)
+        return CameraResultsInfo(cameraName, cameraResults, lenses)
+    }
+    
+    private fun testKeymanagerData(keyName: String) {
         val km = DJISDKManager.getInstance().keyManager
-        val djiKey = CameraKey.create(CameraKey.VIDEO_FILE_FORMAT_RANGE)
+        val djiKey = CameraKey.create(keyName)
         if (djiKey == null) {
-            Timber.e("Can't create CameraKey VIDEO_FILE_FORMAT_RANGE.")
+            Timber.e("Can't create CameraKey ${djiKey.toString()}.")
         }
         val sdkModes = km?.getValue(djiKey) as Array<*>?
         val modes = sdkModes?.joinToString(separator = ",") { it.toString() }
-        cameraResults.add(CameraTestCaseReport(
-            testIndex,
-            "VIDEO_FILE_FORMAT_RANGE",
-            modes ?: "",
-            modes != null,
-            false,
-            currentState.copy()
-                            ))
-        return CameraResultsInfo(cameraName, cameraResults, lenses)
+        cameraResults.add(
+            CameraTestCaseReport(
+                testIndex,
+                djiKey.toString(),
+                modes ?: "",
+                modes != null,
+                false,
+                currentState.copy()
+                                )
+                         )
+        testSupportedResolutionAndFrameRate()
     }
     
     private suspend fun testCamera() : List<CameraTestCaseReport> {
@@ -112,7 +123,23 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
         list.add(setValue(Interface.CAMERA, camera::setThermalDigitalZoomFactor, ThermalDigitalZoomFactor.X_1))
         return list
     }
-    
+    private fun testSupportedResolutionAndFrameRate() {
+        val sdkRange: Array<out ResolutionAndFrameRate>? = camera.getDjiCamera()?.capabilities?.videoResolutionAndFrameRateRange()
+        if (sdkRange == null) {
+            Timber.w("Video resolution and frame rate range is null")
+        }
+        val data = sdkRange?.joinToString(separator = ",") { "fov:${it.fov} frameRate:${it.frameRate} resolution:${it.resolution}" }
+        cameraResults.add(
+            CameraTestCaseReport(
+                testIndex,
+                "Camera.videoResolutionAndFrameRateRange",
+                data ?: "",
+                data != null,
+                false,
+                currentState.copy()
+                                )
+                         )
+    }
     @RequiresApi(Build.VERSION_CODES.N)
     private fun testLens(lens: Lens) : List<CameraTestCaseReport> {
         val list = mutableListOf<CameraTestCaseReport>()
