@@ -1107,9 +1107,11 @@ public class DjiLens implements Lens {
     @NonNull
     @Override
     public List<Aperture> getSupportedApertures() {
-        if (djiLens != null) {
-            if (djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T)
-                    || djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20)) {
+        if (djiLens != null && djiMultiLensCamera != null) {
+            String displayName = djiMultiLensCamera.getDisplayName();
+            if (displayName != null &&
+                    (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                    || displayName.equals(Camera.DisplayNameZenmuseH20))) {
                 ArrayList<Aperture> arr = new ArrayList<>();
                 if (djiLens.getType() == SettingsDefinitions.LensType.ZOOM) {
                     arr.add(Aperture.F_3_DOT_5);
@@ -1243,8 +1245,10 @@ public class DjiLens implements Lens {
     @Override
     public List<ExposureCompensation> getSupportedExposureCompensations() {
         if (djiLens != null) {
-            if ((djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T)
-                    || djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20))
+            String displayName = djiMultiLensCamera.getDisplayName();
+            if (displayName != null &&
+                    (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                            || displayName.equals(Camera.DisplayNameZenmuseH20))
                     &&
                     (djiLens.getType() == SettingsDefinitions.LensType.WIDE
                             || djiLens.getType() == SettingsDefinitions.LensType.ZOOM)) {
@@ -1322,8 +1326,10 @@ public class DjiLens implements Lens {
     @Override
     public List<ExposureMode> getSupportedExposureModes() {
         if (djiLens != null) {
-            if ((djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T)
-                    || djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20))) {
+            String displayName = djiMultiLensCamera.getDisplayName();
+            if (displayName != null &&
+                    (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                            || displayName.equals(Camera.DisplayNameZenmuseH20))) {
                 if (djiLens.getType() == SettingsDefinitions.LensType.ZOOM) {
                     ArrayList<ExposureMode> arr = new ArrayList<>();
                     arr.add(ExposureMode.MANUAL);
@@ -1443,8 +1449,10 @@ public class DjiLens implements Lens {
     @Override
     public List<ISO> getSupportedISOs() {
         if (djiLens != null) {
-            if ((djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T)
-                    || djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20))
+            String displayName = djiMultiLensCamera.getDisplayName();
+            if (displayName != null &&
+                    (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                            || displayName.equals(Camera.DisplayNameZenmuseH20))
                     &&
                     (djiLens.getType() == SettingsDefinitions.LensType.WIDE
                             || djiLens.getType() == SettingsDefinitions.LensType.ZOOM)) {
@@ -1529,8 +1537,10 @@ public class DjiLens implements Lens {
     @Override
     public List<MeteringMode> getSupportedMeteringModes() {
         if (djiLens != null) {
-            if (djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20)
-                    || djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T)) {
+            String displayName = djiMultiLensCamera.getDisplayName();
+            if (displayName != null &&
+                    (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                            || displayName.equals(Camera.DisplayNameZenmuseH20))) {
                 if (djiLens.getType() == SettingsDefinitions.LensType.ZOOM) {
                     ArrayList<MeteringMode> modes = new ArrayList<>();
                     modes.add(MeteringMode.SPOT);
@@ -1626,10 +1636,10 @@ public class DjiLens implements Lens {
                 range.add(DjiLensValuesMapping.photoAspectRatio(sdkValue));
             }
         }
-
-        if (djiLens != null &&
-                (djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20T) ||
-                        djiMultiLensCamera.getDisplayName().equals(Camera.DisplayNameZenmuseH20))) {
+        String displayName = djiMultiLensCamera.getDisplayName();
+        if (djiLens != null && displayName != null &&
+                (displayName.equals(Camera.DisplayNameZenmuseH20T)
+                        || displayName.equals(Camera.DisplayNameZenmuseH20))) {
             if (getType() == LensType.ZOOM) {
                 range.add(PhotoAspectRatio.RATIO_4_3);
             }

@@ -7,13 +7,16 @@ import com.example.ugcssample.drone.camera.Camera
 import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.*
+import dji.common.camera.SettingsDefinitions
+import dji.keysdk.CameraKey
+import dji.sdk.sdkmanager.DJISDKManager
 import timber.log.Timber
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.reflect.KFunction0
+import kotlin.reflect.KFunction1
 import kotlin.reflect.KSuspendFunction0
 import kotlin.reflect.KSuspendFunction1
-import kotlin.reflect.KFunction1
 
 class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
     private val cameraResults = mutableListOf<CameraTestCaseReport>()
@@ -53,7 +56,21 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                           )
             }
         }
-    
+        val km = DJISDKManager.getInstance().keyManager
+        val djiKey = CameraKey.create(CameraKey.VIDEO_FILE_FORMAT_RANGE)
+        if (djiKey == null) {
+            Timber.e("Can't create CameraKey VIDEO_FILE_FORMAT_RANGE.")
+        }
+        val sdkModes = km?.getValue(djiKey) as Array<*>?
+        val modes = sdkModes?.joinToString(separator = ",") { it.toString() }
+        cameraResults.add(CameraTestCaseReport(
+            testIndex,
+            "VIDEO_FILE_FORMAT_RANGE",
+            modes ?: "",
+            modes != null,
+            false,
+            currentState.copy()
+                            ))
         return CameraResultsInfo(cameraName, cameraResults, lenses)
     }
     
