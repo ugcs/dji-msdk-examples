@@ -1,5 +1,7 @@
 package com.example.ugcssample.drone;
 
+import android.os.Handler;
+
 import com.example.ugcssample.utils.PermissionCheckResult;
 
 import dji.sdk.products.Aircraft;
@@ -17,6 +19,8 @@ public interface DroneBridge {
     Aircraft getAircraftInstance();
 
     void startModelSimulator();
+
+    void takeCapture(Handler handler, String xmpTag);
 
     void onDestroy();
 }

@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.usb.UsbAccessory;
 import android.location.LocationManager;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -18,6 +18,7 @@ import com.example.ugcssample.utils.ToastUtils;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
@@ -27,13 +28,11 @@ import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.keysdk.ProductKey;
 import dji.keysdk.callback.KeyListener;
-import dji.log.DJILog;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.basestation.BaseStation;
-import dji.sdk.flightcontroller.FlightAssistant;
-import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.camera.Camera;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -67,8 +66,8 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         super(mContext);
         this.context = mContext;
 
-       // this.simulatorUpdateCallbackAndController
-       //         = new MySimulatorUpdateCallbackAndController(vehicleModelContainer, lbm);
+        // this.simulatorUpdateCallbackAndController
+        //         = new MySimulatorUpdateCallbackAndController(vehicleModelContainer, lbm);
 
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
     }
@@ -197,7 +196,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     }
 
     private void onProductConnect(BaseProduct baseProduct) {
-        Aircraft af = (Aircraft)baseProduct;
+        Aircraft af = (Aircraft) baseProduct;
         af.getFlightController().getSerialNumber(new CommonCallbacks.CompletionCallbackWith<String>() {
             @Override
             public void onSuccess(String s) {
@@ -206,7 +205,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     droneInitFuture = null;
                 }
                 droneInitFuture = WORKER.schedule(() ->
-                            initDrone(s), 2, TimeUnit.SECONDS);
+                        initDrone(s), 2, TimeUnit.SECONDS);
             }
             @Override
             public void onFailure(DJIError djiError) {
@@ -257,7 +256,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     droneInitFuture = null;
                 }
                 droneInitFuture = WORKER.schedule(() ->
-                            initDrone(sn), 2, TimeUnit.SECONDS);
+                        initDrone(sn), 2, TimeUnit.SECONDS);
             });
         }
     }
@@ -296,24 +295,26 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         if (!(mProduct instanceof Aircraft)) {
             return;
         }
-        aircraft = (Aircraft)mProduct;
+        aircraft = (Aircraft) mProduct;
         Timber.i("aircraft connected %s", aircraft.getModel().getDisplayName());
         ToastUtils.setResultToToast(String.format("aircraft connected %s", aircraft.getModel().getDisplayName()));
 
         if (aircraft != null) {
             aircraft.setDiagnosticsInformationCallback(list -> {
                 synchronized (this) {
-                    for (DJIDiagnostics message:
-                    list) {
+                    for (DJIDiagnostics message :
+                            list) {
                         Timber.i("DJIDiagnostics: %s - %s: %s", message.getCode(), message.getReason(), message.getSolution());
                     }
                 }
             });
-        };
+        }
+        ;
         Intent intent = new Intent();
         intent.setAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
         LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
     }
+
     private void disconnectDrone() {
         // Drone is disconnected
         // 1. cancel initialization future if it is scheduled
@@ -373,14 +374,34 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     @Override
     public void startModelSimulator() {
         WORKER.submit(() -> {
-            aircraft.getFlightController().getSimulator().start(InitializationData.createInstance(new LocationCoordinate2D(BASE_LATITUDE, BASE_LONGITUDE),REFRESH_FREQ, SATELLITE_COUNT), new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    String result = djiError == null ? "Simulator started" : djiError.getDescription();
-                    Timber.i(result);
-                    ToastUtils.setResultToToast(result);
-                }
+            aircraft.getFlightController().getSimulator().start(InitializationData.createInstance(new LocationCoordinate2D(BASE_LATITUDE, BASE_LONGITUDE), REFRESH_FREQ, SATELLITE_COUNT), djiError -> {
+                String result = djiError == null ? "Simulator started" : djiError.getDescription();
+                Timber.i(result);
+                ToastUtils.setResultToToast(result);
             });
         });
     }
+
+    @Override
+    public void takeCapture(Handler handler, String xmpTag) {
+        final Camera camera = DJISDKManager.getInstance().getProduct().getCamera();
+        if (camera != null) {
+            camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
+                if (null == djiError) {
+                    handler.postDelayed(() -> camera.startShootPhoto(djiError1 -> {
+                        if (djiError1 == null) {
+                            camera.setMediaFileCustomInformation(xmpTag, djiError2 -> {
+                                ToastUtils.setResultToToast(djiError2.getDescription());
+                            });
+                            ToastUtils.setResultToToast("Take photo: success");
+                        } else {
+                            ToastUtils.setResultToToast(djiError1.getDescription());
+                        }
+                    }), 2000);
+                }
+            });
+        }
+    }
+
+
 }

@@ -3,6 +3,7 @@ package com.example.ugcssample.services;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -54,6 +55,12 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     public void startSimulator() {
         droneBridge.startModelSimulator();
     }
+
+    @Override
+    public void takeCapture(Handler handler, String xmpTag) {
+        droneBridge.takeCapture(handler, xmpTag);
+    }
+
 
     private DroneBridge newDroneBridge(Context context) {
         return new DroneBridgeImpl(context);

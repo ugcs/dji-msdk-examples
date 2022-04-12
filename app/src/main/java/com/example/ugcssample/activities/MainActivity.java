@@ -8,8 +8,10 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private Intent sIntent;
     private ServiceConnection sConn;
-    private Button btnSimulator;
+    private Button btnSimulator, btnTakeCapture;
+    private EditText editTextXmpTag;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -55,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
                 btnSimulator.setEnabled(true);
+                btnTakeCapture.setEnabled(true);
+                editTextXmpTag.setEnabled(true);
                 primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
             }
         }
@@ -77,8 +82,12 @@ public class MainActivity extends AppCompatActivity {
         };
         primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
         btnSimulator = (Button) findViewById(R.id.btn_simulator);
-        btnSimulator.setOnClickListener(v -> {
-            appMainService.startSimulator();
+        btnSimulator.setOnClickListener(v -> appMainService.startSimulator());
+        btnTakeCapture = (Button) findViewById(R.id.btn_take_capture);
+        editTextXmpTag = (EditText) findViewById(R.id.edit_text_xmp_tag);
+        btnTakeCapture.setOnClickListener(v -> {
+            String xmpTag = editTextXmpTag.getText().toString();
+            appMainService.takeCapture(new Handler(), xmpTag);
         });
     }
 

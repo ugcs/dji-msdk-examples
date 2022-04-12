@@ -17,10 +17,6 @@ import timber.log.Timber;
  */
 public class UgcsSampleApplication extends Application {
 
-    public static final String TAG = UgcsSampleApplication.class.getName();
-
-    private static BaseProduct product;
-    private static BluetoothProductConnector bluetoothConnector = null;
     private static Application app = null;
 
     /**

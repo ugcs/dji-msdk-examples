@@ -17,7 +17,7 @@
         android:id="@+id/main_video_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/main_indicators_fragment_extra_distance"
+        android:layout_below="@id/main_buttons"
         android:elevation="1dp">
 
         <com.example.ugcssample.fragment.VideoViewFragment
@@ -31,16 +31,16 @@
     <LinearLayout
         android:id="@+id/main_buttons"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/main_indicators_fragment_extra_distance"
-        android:elevation="1000dp">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/main_indicators_fragment_extra_distance">
         <Button
             android:id="@+id/btn_simulator"
             android:text="Start Simulator"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:layout_width="125dp"/>
 
         <Button
             android:id="@+id/btn_upload_mission"
@@ -48,7 +48,7 @@
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:layout_width="125dp"/>
 
         <Button
             android:id="@+id/btn_start_mission"
@@ -56,7 +56,24 @@
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:layout_width="125dp"/>
+
+        <Button
+            android:id="@+id/btn_take_capture"
+            android:layout_width="125dp"
+            android:layout_height="70dp"
+            android:layout_marginEnd="5dp"
+            android:enabled="false"
+            android:text="Take capture" />
+
+        <EditText
+            android:id="@+id/edit_text_xmp_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="textPersonName"
+            android:hint="XMP tag" />
     </LinearLayout>
 
 </RelativeLayout>
