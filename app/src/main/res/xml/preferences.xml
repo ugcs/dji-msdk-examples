@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="buttons_category"
+        app:title="@string/pref_buttons_category_name">
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_C1"
+            android:title="@string/list_pref_C1_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_C2"
+            android:title="@string/list_pref_C2_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_5d_left"
+            android:title="@string/list_pref_5d_left_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_5d_right"
+            android:title="@string/list_pref_5d_right_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_5d_up"
+            android:title="@string/list_pref_5d_up_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_5d_down"
+            android:title="@string/list_pref_5d_down_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
+            android:key="list_preference_5d_push"
+            android:title="@string/list_pref_5d_push_title" />
+
+    </PreferenceCategory>
+</PreferenceScreen>
