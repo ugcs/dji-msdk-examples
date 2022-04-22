@@ -7,17 +7,20 @@ import com.example.ugcssample.drone.camera.Camera
 import com.example.ugcssample.drone.camera.Lens
 import com.example.ugcssample.drone.camera.settings.camera.*
 import com.example.ugcssample.drone.camera.settings.lens.*
-import com.example.ugcssample.drone.camera.settings.lens.ResolutionAndFrameRate as ResolutionAndFrameRateModel
 import dji.common.camera.ResolutionAndFrameRate
+import dji.common.util.CommonCallbacks
 import dji.keysdk.CameraKey
 import dji.sdk.sdkmanager.DJISDKManager
 import timber.log.Timber
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
+import java8.util.concurrent.CompletableFuture
 import kotlin.reflect.KFunction0
 import kotlin.reflect.KFunction1
+import kotlin.reflect.KFunction2
 import kotlin.reflect.KSuspendFunction0
 import kotlin.reflect.KSuspendFunction1
+import dji.common.error.DJIError
+import java.util.concurrent.ExecutionException
+import com.example.ugcssample.drone.suspendCoroutine as DjiSuspend
 
 class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
     private val cameraResults = mutableListOf<CameraTestCaseReport>()
@@ -87,42 +90,74 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
     
     private suspend fun testCamera() : List<CameraTestCaseReport> {
         val list = mutableListOf<CameraTestCaseReport>()
-        val supportedCameraModes = camera.getSupportedCameraModes()
-        for (mode in CameraMode.values()) {
-            list.add(setValue(Interface.CAMERA, camera::setCameraMode, mode, supportedCameraModes.contains(mode)))
-        }
-        list.add(setValue(Interface.CAMERA, camera::setCameraMode, CameraMode.SHOOT_PHOTO, supportedCameraModes.contains(CameraMode.SHOOT_PHOTO)))
-        for (mode in PhotoAEBCount.values()) {
-            list.add(setValue(Interface.CAMERA, camera::setPhotoAEBCount, mode))
-        }
-        for (mode in PhotoBurstCount.values()) {
-            list.add(setValue(Interface.CAMERA, camera::setPhotoBurstCount, mode))
-        }
-    
-        for (count in 0..15) {
-            for (interval in 0..10) {
-                list.add(setValue(Interface.CAMERA, camera::setPhotoTimeIntervalSettings, PhotoTimeIntervalSettings(count, interval)))
+        list.apply {
+            val supportedCameraModes = camera.getSupportedCameraModes()
+            for (mode in CameraMode.values())
+            {
+                add(setValue(Interface.CAMERA, camera::setCameraMode, mode, supportedCameraModes.contains(mode)))
             }
+            add(setValue(Interface.CAMERA, camera::setCameraMode, CameraMode.SHOOT_PHOTO, supportedCameraModes.contains(CameraMode.SHOOT_PHOTO)))
+            for (mode in PhotoAEBCount.values())
+            {
+                add(setValue(Interface.CAMERA, camera::setPhotoAEBCount, mode))
+            }
+            for (mode in PhotoBurstCount.values())
+            {
+                add(setValue(Interface.CAMERA, camera::setPhotoBurstCount, mode))
+            }
+    
+            for (count in 0..15)
+            {
+                for (interval in 0..10)
+                {
+                    add(setValue(Interface.CAMERA, camera::setPhotoTimeIntervalSettings, PhotoTimeIntervalSettings(count, interval)))
+                }
+            }
+            add(getValue(Interface.CAMERA, camera::isThermalCamera))
+            add(getValue(Interface.CAMERA, camera::getThermalIsothermEnabled))
+            add(getValue(Interface.CAMERA, camera::getThermalIsothermLowerValue))
+            add(getValue(Interface.CAMERA, camera::getThermalIsothermUpperValue))
+            add(getValue(Interface.CAMERA, camera::getFocusAssistantSettings))
+            add(getValue(Interface.CAMERA, camera::getFocusMode))
+            add(getValue(Interface.CAMERA, camera::getFocusRingValue))
+            add(getValue(Interface.CAMERA, camera::getFocusTarget))
+            add(getValue(Interface.CAMERA, camera::isFlatCameraModeSupported))
+            val djiCamera = camera.getDjiCamera()!!
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAELock))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAntiFlickerFrequency))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAperture))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAudioGain))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAudioRecordingEnabled))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getAutoLockGimbalEnabled))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getBeaconAutoTurnOffEnabled))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getCameraVideoStreamSource))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getCaptureCameraStreamSettings))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getColor))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getContrast))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getCustomExpandDirectoryName))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getCustomExpandFileName))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getDefogEnabled))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getDewarpingEnabled))
+            add(getValueDirect(Interface.CAMERA, djiCamera::getDigitalZoomFactor))
+            add(getValueFeature(Interface.CAMERA, djiCamera::isSuperResolutionSupported))
+            add(getValueFeature(Interface.CAMERA, djiCamera::isAFCSupported))
+            add(getValueFeature(Interface.CAMERA, djiCamera::isAdjustableApertureSupported))
+            add(getValueFeature(Interface.CAMERA, djiCamera::isAdjustableApertureSupported))
+            for (mode in FlatCameraMode.values())
+            {
+                add(setValue(Interface.CAMERA, camera::setFlatMode, mode))
+            }
+            setValue(Interface.CAMERA, camera::setFlatMode, FlatCameraMode.PHOTO_SINGLE)
+            for (mode in ThermalDigitalZoomFactor.values())
+            {
+                add(setValue(Interface.CAMERA, camera::setThermalDigitalZoomFactor, mode))
+            }
+            add(setValue(Interface.CAMERA, camera::setThermalDigitalZoomFactor, ThermalDigitalZoomFactor.X_1))
         }
-        list.add(getValue(Interface.CAMERA, camera::isThermalCamera))
-        list.add(getValue(Interface.CAMERA, camera::getThermalIsothermEnabled))
-        list.add(getValue(Interface.CAMERA, camera::getThermalIsothermLowerValue))
-        list.add(getValue(Interface.CAMERA, camera::getThermalIsothermUpperValue))
-        list.add(getValue(Interface.CAMERA, camera::getFocusAssistantSettings))
-        list.add(getValue(Interface.CAMERA, camera::getFocusMode))
-        list.add(getValue(Interface.CAMERA, camera::getFocusRingValue))
-        list.add(getValue(Interface.CAMERA, camera::getFocusTarget))
-        list.add(getValue(Interface.CAMERA, camera::isFlatCameraModeSupported))
-        for (mode in FlatCameraMode.values()) {
-            list.add(setValue(Interface.CAMERA, camera::setFlatMode, mode))
-        }
-        setValue(Interface.CAMERA, camera::setFlatMode, FlatCameraMode.PHOTO_SINGLE)
-        for (mode in ThermalDigitalZoomFactor.values()) {
-            list.add(setValue(Interface.CAMERA, camera::setThermalDigitalZoomFactor, mode))
-        }
-        list.add(setValue(Interface.CAMERA, camera::setThermalDigitalZoomFactor, ThermalDigitalZoomFactor.X_1))
         return list
     }
+    
+    
     private fun testSupportedResolutionAndFrameRate() {
         val sdkRange: Array<out ResolutionAndFrameRate>? = camera.getDjiCamera()?.capabilities?.videoResolutionAndFrameRateRange()
         if (sdkRange == null) {
@@ -140,8 +175,7 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                                 )
                          )
     }
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun testLens(lens: Lens) : List<CameraTestCaseReport> {
+    private suspend fun testLens(lens: Lens) : List<CameraTestCaseReport> {
         val list = mutableListOf<CameraTestCaseReport>()
         for (mode in AntiFlickerFrequency.values()) {
             list.add(setValueFeature(Interface.LENS, lens::setAntiFlickerFrequency, mode))
@@ -192,11 +226,18 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
         list.add(getValueFeature(Interface.LENS, lens::getFocusTarget))
         list.add(getValueFeature(Interface.LENS, lens::isThermalLens))
         list.add(getValueFeature(Interface.LENS, lens::getSupportedFlatCameraModes))
-    
-    
+        
         for (mode in ThermalDigitalZoomFactor.values()) {
             list.add(setValueFeature(Interface.LENS, lens::setThermalDigitalZoomFactor, mode))
         }
+        val djiLens = lens.djiLens
+        list.add(getValueFeature(Interface.LENS, djiLens::isAdjustableApertureSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isAdjustableFocalPointSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isDigitalZoomSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isHybridZoomSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isMechanicalShutterSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isOpticalZoomSupported))
+        list.add(getValueFeature(Interface.LENS, djiLens::isThermalLens))
         return list
     }
     
@@ -225,6 +266,7 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                                     )
         }
     }
+    private suspend fun <R> getValue(inter : Interface, method : KSuspendFunction0<R>) = getValue(inter, method, false)
     private suspend fun <R> getValue(inter : Interface, method : KSuspendFunction0<R>, isSupported: Boolean): CameraTestCaseReport {
         onProgressUpdate.invoke(++testIndex)
         try {
@@ -249,10 +291,32 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                                     )
         }
     }
-    private suspend fun <R> getValue(inter : Interface, method : KSuspendFunction0<R>) = getValue(inter, method, false)
-    @RequiresApi(Build.VERSION_CODES.N)
+    private suspend fun <R> getValueDirect(inter : Interface, method : KFunction1<CommonCallbacks.CompletionCallbackWith<R>, Unit>) = getValueDirect(inter, method, false)
+    private suspend fun <R> getValueDirect(inter : Interface, method : KFunction1<CommonCallbacks.CompletionCallbackWith<R>, Unit>, isSupported: Boolean) : CameraTestCaseReport {
+        onProgressUpdate.invoke(++testIndex)
+        try {
+            val res : R? = DjiSuspend(method)
+            return CameraTestCaseReport(
+                    testIndex,
+                    "$inter.${method.name}",
+                    res?.toString() ?: "UNKNOWN",
+                    true,
+                    isSupported,
+                    currentState.copy()
+                                       )
+        } catch (e: DJIErrorException) {
+            return CameraTestCaseReport(
+                    testIndex,
+                    "$inter.${method.name}",
+                    "UNKNOWN",
+                    false,
+                    isSupported,
+                    currentState.copy(),
+                    e.description
+                                       )
+        }
+    }
     private fun <R> getValueFeature(inter : Interface, method : KFunction0<R>) = getValueFeature(inter,method,false)
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun <R> getValueFeature(inter : Interface, method : KFunction0<R>, isSupported: Boolean): CameraTestCaseReport {
         onProgressUpdate.invoke(++testIndex)
         try {
@@ -289,9 +353,7 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                                     )
         }
     }
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun <P0> setValueFeature(inter : Interface, method : KFunction1<P0, CompletableFuture<Void>>, arg0 : P0) = setValueFeature(inter, method, arg0, false)
-    @RequiresApi(Build.VERSION_CODES.N)
     private fun <P0> setValueFeature(inter : Interface, method : KFunction1<P0, CompletableFuture<Void>>, arg0 : P0, isSupported : Boolean): CameraTestCaseReport {
         onProgressUpdate.invoke(++testIndex)
         try {
@@ -319,4 +381,30 @@ class CameraTester(val camera : Camera, val onProgressUpdate : (Int) -> Unit) {
                                     )
         }
     }
+    private suspend fun <P0> setValueDirect(inter : Interface, method : KFunction2<P0, CommonCallbacks.CompletionCallback<DJIError>?, Unit>, arg0 : P0) = setValueDirect(inter, method, arg0, false)
+    private suspend fun <P0> setValueDirect(inter : Interface, method : KFunction2<P0, CommonCallbacks.CompletionCallback<DJIError>?, Unit>, arg0 : P0, isSupported: Boolean) : CameraTestCaseReport {
+        onProgressUpdate.invoke(++testIndex)
+        try {
+            val res = suspendCoroutineCompletion(method, arg0)
+            return CameraTestCaseReport(
+                    testIndex,
+                    "$inter.${method.name}",
+                    res.toString() ?: "UNKNOWN",
+                    true,
+                    isSupported,
+                    currentState.copy()
+                                       )
+        } catch (e: DJIErrorException) {
+            return CameraTestCaseReport(
+                    testIndex,
+                    "$inter.${method.name}",
+                    "UNKNOWN",
+                    false,
+                    isSupported,
+                    currentState.copy(),
+                    e.description
+                                       )
+        }
+    }
+    
 }

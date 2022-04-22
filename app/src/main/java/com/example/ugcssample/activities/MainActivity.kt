@@ -18,6 +18,7 @@ import com.example.ugcssample.services.DjiAppMainService
 import com.example.ugcssample.services.DjiAppMainServiceBinder
 import com.example.ugcssample.services.DjiAppMainServiceImpl
 import com.example.ugcssample.utils.ArrayUtils
+import com.example.ugcssample.utils.ExceptionWriter
 import com.example.ugcssample.utils.PermissionUtils
 import dji.sdk.camera.VideoFeeder
 import timber.log.Timber
@@ -41,29 +42,34 @@ class MainActivity : AppCompatActivity() {
     var broadcastManager: LocalBroadcastManager? = null
     private var primaryVideoFeedView: VideoViewFragment? = null
     private val eventReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
+        override fun onReceive(context : Context, intent : Intent) {
             val action = intent.action ?: return
             when (DroneBridgeImpl.DroneActions.valueOf(action)) {
-                DroneBridgeImpl.DroneActions.ON_DRONE_CONNECTED -> {
+                DroneBridgeImpl.DroneActions.ON_DRONE_CONNECTED ->
+                {
                     tvStatus?.text = ("Drone ready. Press 'Start Tests'")
                     btnDetectCameraModes!!.isEnabled = true
                     primaryVideoFeedView!!.registerLiveVideo(
-                        VideoFeeder.getInstance().primaryVideoFeed,
-                        true
+                            VideoFeeder.getInstance().primaryVideoFeed,
+                            true
                                                             )
                 }
-                DroneBridgeImpl.DroneActions.ON_DRONE_DISCONNECTED -> {
+                DroneBridgeImpl.DroneActions.ON_DRONE_DISCONNECTED ->
+                {
                     tvStatus?.text = ("Drone disconnected. Connect drone")
                 }
-                DroneBridgeImpl.DroneActions.CAMERA_TESTS_STARTED -> {
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_STARTED ->
+                {
                     btnDetectCameraModes?.isEnabled = false
                     tvStatus?.text = ("Tests started. Please, wait")
-                    Toast.makeText(context,"Tests started. Please, wait",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Tests started. Please, wait", Toast.LENGTH_SHORT).show()
                 }
-                DroneBridgeImpl.DroneActions.CAMERA_TESTS_PROGRESS -> {
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_PROGRESS ->
+                {
                     tvStatus?.text = ("Tests running. Test #${intent.getIntExtra("test-index", -1)}")
                 }
-                DroneBridgeImpl.DroneActions.CAMERA_TESTS_FINISHED -> {
+                DroneBridgeImpl.DroneActions.CAMERA_TESTS_FINISHED ->
+                {
                     btnDetectCameraModes?.isEnabled = true
                     tvStatus?.text = ("File dumped at\n${intent.getStringExtra("file-path")}")
                     Toast.makeText(context, "Tests finished. File dumped", Toast.LENGTH_SHORT).show()
@@ -72,16 +78,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState : Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sIntent = Intent(this, DjiAppMainServiceImpl::class.java)
         sConn = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+            override fun onServiceConnected(name : ComponentName, binder : IBinder) {
                 onMainServiceConnected(name, binder)
             }
 
-            override fun onServiceDisconnected(name: ComponentName) {
+            override fun onServiceDisconnected(name : ComponentName) {
                 onMainServiceDisconnected()
             }
         }
@@ -94,9 +100,19 @@ class MainActivity : AppCompatActivity() {
             
         }
     
+        val context = applicationContext
+        val exceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    
+        val dpExceptionHandler = Thread.UncaughtExceptionHandler { thread, ex ->
+            ExceptionWriter(ex).saveStackTraceToSd(context)
+            exceptionHandler.uncaughtException(thread, ex)
+        }
+    
+        Thread.setDefaultUncaughtExceptionHandler(dpExceptionHandler)
+    
     }
 
-    protected fun onMainServiceConnected(name: ComponentName?, binder: IBinder) {
+    protected fun onMainServiceConnected(name : ComponentName?, binder : IBinder) {
         appMainService = (binder as DjiAppMainServiceBinder).getService()
         checkAndRequestAndroidPermissions()
     }
@@ -138,9 +154,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+            requestCode : Int,
+            permissions : Array<String>,
+            grantResults : IntArray
                                            ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Check for granted permission and remove from missing list

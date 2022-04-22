@@ -41,7 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java8.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -1038,8 +1038,13 @@ public class DjiLens implements Lens {
     public AntiFlickerFrequency getAntiFlickerFrequency() {
         return DjiLensValuesMapping.antiFlickerFrequency(settings.antiFlicker);
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
+    @Override
+    public dji.sdk.camera.Lens getDjiLens()
+    {
+        return djiLens;
+    }
+    
     @Override
     public CompletableFuture<Void> setAntiFlickerFrequency(@NotNull AntiFlickerFrequency antiFlickerFrequency) {
         SettingsDefinitions.AntiFlickerFrequency sdkAntiFlickerFrequency = DjiLensValuesMapping.sdkAntiFlickerFrequency(antiFlickerFrequency);
@@ -1074,7 +1079,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.aperture(settings.aperture);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setAperture(@NonNull Aperture aperture) {
         SettingsDefinitions.Aperture sdkAperture = DjiLensValuesMapping.sdkAperture(aperture);
@@ -1162,7 +1167,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.displayMode(settings.displayMode);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setDisplayMode(@NotNull DisplayMode displayMode) {
         SettingsDefinitions.DisplayMode sdkDisplayMode = DjiLensValuesMapping.sdkDisplayMode(displayMode);
@@ -1211,7 +1216,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.exposureCompensation(settings.exposureCompensation);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setExposureCompensation(@NonNull ExposureCompensation exposureCompensation) {
         SettingsDefinitions.ExposureCompensation sdkExposureCompensation = DjiLensValuesMapping.sdkExposureCompensation(exposureCompensation);
@@ -1292,7 +1297,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.exposureMode(settings.exposureMode);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setExposureMode(@NonNull ExposureMode exposureMode) {
         SettingsDefinitions.ExposureMode sdkExposureMode = DjiLensValuesMapping.sdkExposureMode(exposureMode);
@@ -1351,7 +1356,7 @@ public class DjiLens implements Lens {
         return new ArrayList<>();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<SettingsDefinitions.FocusMode> getFocusMode() {
         if (djiLens != null) {
@@ -1415,7 +1420,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.iso(settings.iso);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setISO(@NonNull ISO iso) {
         SettingsDefinitions.ISO sdkIso = DjiLensValuesMapping.sdkIso(iso);
@@ -2109,7 +2114,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.whiteBalance(settings.whiteBalance);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setWhiteBalance(@NonNull WhiteBalance whiteBalance) {
         dji.common.camera.WhiteBalance sdkWhiteBalance = DjiLensValuesMapping.sdkWhiteBalance(whiteBalance);
@@ -2139,7 +2144,7 @@ public class DjiLens implements Lens {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<PointF> getFocusTarget() {
         if (djiLens != null) {
@@ -2150,7 +2155,7 @@ public class DjiLens implements Lens {
         }
         return null;
     }
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public boolean isThermalLens() {
         if (djiLens != null) {
@@ -2195,7 +2200,7 @@ public class DjiLens implements Lens {
         }
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setThermalDigitalZoomFactor(@NonNull ThermalDigitalZoomFactor factor) {
         SettingsDefinitions.ThermalDigitalZoomFactor thermalDigitalZoomFactor = factor.toDji();
@@ -2222,7 +2227,7 @@ public class DjiLens implements Lens {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Integer> getFocusRingValue() {
         if (djiLens != null) {
@@ -2244,7 +2249,7 @@ public class DjiLens implements Lens {
         return DjiLensValuesMapping.focusAssistantSettings(settings.focusAssistantSettings);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Void> setFocusAssistantSettings(@NonNull FocusAssistantSettings focusAssistantSettings) {
         dji.common.camera.FocusAssistantSettings sdkFocusAssistantSettings = DjiLensValuesMapping.sdkFocusAssistantSettings(focusAssistantSettings);
@@ -2430,7 +2435,7 @@ public class DjiLens implements Lens {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Integer> getThermalIsothermLowerValue() {
         if (djiLens != null) {
@@ -2442,7 +2447,7 @@ public class DjiLens implements Lens {
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Integer> getThermalIsothermUpperValue() {
         if (djiLens != null) {
@@ -2509,7 +2514,7 @@ public class DjiLens implements Lens {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     @Override
     public CompletableFuture<Boolean> getThermalIsothermEnabled() {
         if(djiLens != null) {

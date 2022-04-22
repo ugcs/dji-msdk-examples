@@ -13,7 +13,7 @@ import dji.common.util.CommonCallbacks.CompletionCallbackWith
 import dji.keysdk.callback.SetCallback
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.concurrent.CompletableFuture
+import java8.util.concurrent.CompletableFuture
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.reflect.KFunction

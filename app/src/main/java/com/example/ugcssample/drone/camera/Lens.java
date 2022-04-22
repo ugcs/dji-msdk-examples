@@ -31,7 +31,7 @@ import com.example.ugcssample.drone.camera.settings.lens.WhiteBalance;
 import com.example.ugcssample.drone.camera.settings.lens.ZoomDirection;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java8.util.concurrent.CompletableFuture;
 
 import dji.common.camera.SettingsDefinitions;
 
@@ -60,6 +60,8 @@ public interface Lens {
      */
     @Nullable
     AntiFlickerFrequency getAntiFlickerFrequency();
+    
+    dji.sdk.camera.Lens getDjiLens();
     
     CompletableFuture<Void> setAntiFlickerFrequency(@NonNull AntiFlickerFrequency antiFlickerFrequency);
 
@@ -297,12 +299,12 @@ public interface Lens {
     @Nullable
     CompletableFuture<PointF> getFocusTarget();
     
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     boolean isThermalLens();
     
     void setFocusTarget(@NonNull PointF focusTarget, Callback onSet);
     
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    
     CompletableFuture<Void> setThermalDigitalZoomFactor(@NonNull ThermalDigitalZoomFactor factor);
     
     void addFocusTargetListener(@NonNull ValueChangeListener<PointF> listener);
