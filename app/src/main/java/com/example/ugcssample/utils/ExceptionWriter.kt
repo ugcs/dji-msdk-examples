@@ -43,4 +43,19 @@ class ExceptionWriter(val exception : Throwable?)
 		val sdf = SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.US)
 		return sdf.format(Date())
 	}
+	
+	companion object {
+		@JvmStatic
+		fun setupCrashHandler (context : Context) {
+			val exceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+			
+			val dpExceptionHandler = Thread.UncaughtExceptionHandler { thread, ex ->
+				ExceptionWriter(ex).saveStackTraceToSd(context)
+				exceptionHandler?.uncaughtException(thread, ex)
+			}
+			
+			Thread.setDefaultUncaughtExceptionHandler(dpExceptionHandler)
+			
+		}
+	}
 }

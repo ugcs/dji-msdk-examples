@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState : Bundle?) {
+        ExceptionWriter.setupCrashHandler(applicationContext)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sIntent = Intent(this, DjiAppMainServiceImpl::class.java)
@@ -100,16 +101,7 @@ class MainActivity : AppCompatActivity() {
             
         }
     
-        val context = applicationContext
-        val exceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-    
-        val dpExceptionHandler = Thread.UncaughtExceptionHandler { thread, ex ->
-            ExceptionWriter(ex).saveStackTraceToSd(context)
-            exceptionHandler.uncaughtException(thread, ex)
-        }
-    
-        Thread.setDefaultUncaughtExceptionHandler(dpExceptionHandler)
-    
+        
     }
 
     protected fun onMainServiceConnected(name : ComponentName?, binder : IBinder) {
