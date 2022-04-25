@@ -57,7 +57,7 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
 
     @Override
     public void bindRC() {
-        droneBridge.remoteControllerBind();
+        droneBridge.remoteController();
     }
 
     @Override

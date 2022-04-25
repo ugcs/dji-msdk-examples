@@ -391,10 +391,12 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             Gimbal gimbal = aircraft.getGimbal();
             if (cameraList.size() == 0) {
                 Timber.i("cameraList is null");
+                ToastUtils.showToast("cameraList is null");
                 return;
             }
             if (gimbal == null) {
                 Timber.i("gimbal is null");
+                ToastUtils.showToast("gimbal is null");
                 return;
             }
             Camera camera = cameraList.get(0);
@@ -415,12 +417,14 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             } else {
 
                 Timber.i("not M300");
+                ToastUtils.showToast("not M300");
                 //Lens singleLens = new DjiLens(djiCamera, context);
                 //lenses.put(singleLens.getId(), singleLens);
                 //singleLens.addOnInitialisedListener(lensInitialisationListener);
             }
             if (activeLens == null) {
                 Timber.i("no zoom lens support");
+                ToastUtils.showToast("no zoom lens support");
                 return;
             }
             RemoteController remoteController = aircraft.getRemoteController();
@@ -493,6 +497,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     gimbalController.stopRotation();
                 }
             });
+            ToastUtils.showToast("RC Binded");
         });
 
 
