@@ -18,11 +18,11 @@
     <string name="list_pref_5d_push_title">5d push</string>
 
     <string-array name="preferences_array">
-        <item>value 1</item>
-        <item>value 2</item>
-        <item>value 3</item>
-        <item>value 4</item>
-        <item>value 5</item>
-        <item>value 6</item>
+        <item>ZoomIn</item>
+        <item>ZoomOut</item>
+        <item>CamUp</item>
+        <item>CamDown</item>
+        <item>CamLeft</item>
+        <item>CamRigh</item>
     </string-array>
 </resources>

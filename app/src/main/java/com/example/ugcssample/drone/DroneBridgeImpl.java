@@ -3,9 +3,13 @@ package com.example.ugcssample.drone;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.usb.UsbAccessory;
 import android.location.LocationManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
@@ -37,6 +42,8 @@ import dji.sdk.base.BaseProduct;
 import dji.sdk.base.DJIDiagnostics;
 import dji.sdk.basestation.BaseStation;
 import dji.sdk.camera.Camera;
+import dji.sdk.camera.Lens;
+import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 import dji.sdk.remotecontroller.RemoteController;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
@@ -66,16 +73,22 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     private ScheduledFuture<?> droneInitFuture;
     private Context context;
+    private SharedPreferences prefs;
+    private List<Camera> cameraList;
+    private GimbalController gimbalController;
 
 
     public DroneBridgeImpl(@NonNull Context mContext) {
         super(mContext);
         this.context = mContext;
+        prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         // this.simulatorUpdateCallbackAndController
         //         = new MySimulatorUpdateCallbackAndController(vehicleModelContainer, lbm);
 
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        this.gimbalController = new GimbalControllerDjiImpl(this, new Handler(Looper
+                .getMainLooper()));
     }
 
     @Override
@@ -315,8 +328,8 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     }
                 }
             });
+            cameraList = aircraft.getCameras();
         }
-        ;
         Intent intent = new Intent();
         intent.setAction(DroneBridgeImpl.ON_DRONE_CONNECTED);
         LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
@@ -375,19 +388,117 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     public void remoteController() {
 
         WORKER.submit(() -> {
+            Gimbal gimbal = aircraft.getGimbal();
+            if (cameraList.size() == 0) {
+                Timber.i("cameraList is null");
+                return;
+            }
+            if (gimbal == null) {
+                Timber.i("gimbal is null");
+                return;
+            }
+            Camera camera = cameraList.get(0);
+            Lens activeLens = null;
+            if (camera.isMultiLensCameraSupported()) {
+                List<Lens> lensesList = camera.getLenses();
+                if (lensesList != null) {
+                    for (Lens lens :
+                            lensesList) {
+                        if (lens.isOpticalZoomSupported()) {
+                            activeLens = lens;
+                            break;
+                        }
+                    }
+                } else {
+                    Timber.i("Lenses list is null");
+                }
+            } else {
 
+                Timber.i("not M300");
+                //Lens singleLens = new DjiLens(djiCamera, context);
+                //lenses.put(singleLens.getId(), singleLens);
+                //singleLens.addOnInitialisedListener(lensInitialisationListener);
+            }
+            if (activeLens == null) {
+                Timber.i("no zoom lens support");
+                return;
+            }
             RemoteController remoteController = aircraft.getRemoteController();
 
+            Lens finalActiveLens = activeLens;
             remoteController.setHardwareStateCallback(rcHardwareState -> {
                 HardwareState.Button btnC1 = rcHardwareState.getC1Button();
+                HardwareState.Button btnC2 = rcHardwareState.getC2Button();
                 HardwareState.FiveDButton btn5D = rcHardwareState.getFiveDButton();
                 HardwareState.FiveDButtonDirection horizontalDirection = btn5D.getHorizontalDirection();
-                ToastUtils.showToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
-                int x = 1;
-                int r = x + 1;
+                HardwareState.FiveDButtonDirection verticalDirection = btn5D.getVerticalDirection();
+               // ToastUtils.showToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
+                String list_preference_C1 = prefs.getString("list_preference_C1", "");
+                String list_preference_C2 = prefs.getString("list_preference_C2", "");
+                String list_preference_5d_left = prefs.getString("list_preference_5d_left", "");
+                String list_preference_5d_right = prefs.getString("list_preference_5d_right", "");
+                String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
+                String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
+                String list_preference_5d_push = prefs.getString("list_preference_5d_push", "");
+                if (btnC1 != null && btnC1.isClicked()) {
+                    finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_IN, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
+                        if (djiError != null) {
+                            Timber.i(djiError.getDescription());
+                        }
+                    });
+                }
+                if (btnC1 != null && !btnC1.isClicked()) {
+                    finalActiveLens.stopContinuousOpticalZoom(djiError -> {
+                        if (djiError != null) {
+                            Timber.i(djiError.getDescription());
+                        }
+                    });
+                }
+                if (btnC2 != null && btnC2.isClicked()) {
+                    finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_OUT, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
+                        if (djiError != null) {
+                            Timber.i(djiError.getDescription());
+                        }
+                    });
+                }
+                if (btnC2 != null && !btnC2.isClicked()) {
+                    finalActiveLens.stopContinuousOpticalZoom(djiError -> {
+                        if (djiError != null) {
+                            Timber.i(djiError.getDescription());
+                        }
+                    });
+                }
+                if (btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.startRotation(-1, 0);
+                }
+                if (!btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.stopRotation();
+                }
+                if (btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.startRotation(1, 0);
+                }
+                if (!btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.stopRotation();
+                }
+                if (btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.startRotation(0, -1);
+                }
+                if (!btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.stopRotation();
+                }
+                if (btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.startRotation(0, 1);
+                }
+                if (!btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.stopRotation();
+                }
             });
         });
 
+
+    }
+
+    private void proceedClick() {
 
     }
 
