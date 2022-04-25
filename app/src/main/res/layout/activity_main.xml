@@ -59,9 +59,11 @@
 
         <Button
             android:id="@+id/btn_simulator"
-            android:layout_width="130dp"
+            android:text="Start Simulator"
             android:layout_height="70dp"
-            android:layout_marginEnd="5dp" />
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp" />
         <Button
             android:id="@+id/btn_rc"
             android:text="Bind RC"
@@ -104,6 +106,7 @@
     </LinearLayout>
 
     <ImageButton
+        android:elevation="1000dp"
         android:id="@+id/btn_preferences"
         android:layout_width="50dp"
         android:layout_height="50dp"
