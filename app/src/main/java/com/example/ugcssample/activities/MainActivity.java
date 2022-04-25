@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private FPVOverlayWidget fpvOverlayWidget;
     private FPVWidget secondaryFpvWidget;
     private boolean switched = false;
+    private ImageButton btnPreferences;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
     LocalBroadcastManager broadcastManager;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.onMainServiceDisconnected();
             }
         };
+
      //   primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
         btnSimulator = (Button) findViewById(R.id.btn_simulator);
         btnSimulator.setOnClickListener(v -> {
@@ -118,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
             }
             switched = !switched;
         });
+
+        btnPreferences = findViewById(R.id.btn_preferences);
+        btnPreferences.setOnClickListener((v -> {
+            Intent intent = new Intent(this, PreferencesActivity.class);
+            startActivity(intent);
+        }));
     }
 
     protected void onMainServiceConnected(ComponentName name, IBinder binder) {

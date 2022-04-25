@@ -56,13 +56,12 @@
         android:layout_below="@id/main_indicators_fragment_extra_distance"
         android:elevation="1000dp"
         android:baselineAligned="false">
+
         <Button
             android:id="@+id/btn_simulator"
-            android:text="Start Simulator"
+            android:layout_width="130dp"
             android:layout_height="70dp"
-            android:enabled="false"
-            android:layout_marginEnd="5dp"
-            android:layout_width="130dp" />
+            android:layout_marginEnd="5dp" />
         <Button
             android:id="@+id/btn_rc"
             android:text="Bind RC"
@@ -103,5 +102,15 @@
             android:layout_width="130dp"/>
             -->
     </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btn_preferences"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:background="@color/black"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        app:srcCompat="@android:drawable/ic_menu_preferences" />
 
 </RelativeLayout>

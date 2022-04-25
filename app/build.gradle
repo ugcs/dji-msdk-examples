@@ -35,6 +35,7 @@ dependencies {
         //exclude module: 'fly-safe-database'
     })
     compileOnly "com.dji:dji-sdk-provided:$dji_sdk_version"
+    implementation "androidx.preference:preference:1.1.1"
 
     // Test
     testImplementation 'junit:junit:4.12'

@@ -7,6 +7,22 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <!-- Preferences !-->
+    <string name="pref_buttons_category_name">Buttons</string>
+    <string name="list_pref_C1_title">C1</string>
+    <string name="list_pref_C2_title">C2</string>
+    <string name="list_pref_5d_left_title">5d left</string>
+    <string name="list_pref_5d_right_title">5d right</string>
+    <string name="list_pref_5d_up_title">5d up</string>
+    <string name="list_pref_5d_down_title">5d down</string>
+    <string name="list_pref_5d_push_title">5d push</string>
+
+    <string-array name="preferences_array">
+        <item>value 1</item>
+        <item>value 2</item>
+        <item>value 3</item>
+        <item>value 4</item>
+        <item>value 5</item>
+        <item>value 6</item>
+    </string-array>
 </resources>
