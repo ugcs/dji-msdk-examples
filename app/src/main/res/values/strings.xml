@@ -9,20 +9,23 @@
 
     <!-- Preferences !-->
     <string name="pref_buttons_category_name">Buttons</string>
-    <string name="list_pref_C1_title">C1</string>
-    <string name="list_pref_C2_title">C2</string>
+    <string name="list_pref_C1_title">C1 Press</string>
+    <string name="list_pref_C2_title">C2 press</string>
+    <string name="list_pref_C1_C2_title">C1 and C2 released</string>
     <string name="list_pref_5d_left_title">5d left</string>
     <string name="list_pref_5d_right_title">5d right</string>
     <string name="list_pref_5d_up_title">5d up</string>
     <string name="list_pref_5d_down_title">5d down</string>
-    <string name="list_pref_5d_push_title">5d push</string>
+    <string name="list_pref_5d_middle_title">5d middle</string>
 
     <string-array name="preferences_array">
-        <item>ZoomIn</item>
-        <item>ZoomOut</item>
+        <item>ZoomInContinue</item>
+        <item>ZoomOutContinue</item>
+        <item>ZoomStop</item>
         <item>CamUp</item>
         <item>CamDown</item>
         <item>CamLeft</item>
-        <item>CamRigh</item>
+        <item>CamRight</item>
+        <item>CamStop</item>
     </string-array>
 </resources>

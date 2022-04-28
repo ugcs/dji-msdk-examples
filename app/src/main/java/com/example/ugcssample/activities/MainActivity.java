@@ -1,14 +1,17 @@
 package com.example.ugcssample.activities;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -81,9 +84,64 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
+    @SuppressLint("CommitPrefEdits")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String list_preference_C1 = prefs.getString("list_preference_C1", "");
+        String list_preference_C2 = prefs.getString("list_preference_C2", "");
+        String list_preference_C1_C2_release = prefs.getString("list_preference_C1_C2_release", "");
+        String list_preference_5d_left = prefs.getString("list_preference_5d_left", "");
+        String list_preference_5d_right = prefs.getString("list_preference_5d_right", "");
+        String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
+        String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
+        String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
+
+       // <item>ZoomInContinue</item>
+       // <item>ZoomOutContinue</item>
+      //  <item>ZoomStop</item>
+      //  <item>CamUp</item>
+      //  <item>CamDown</item>
+      //  <item>CamLeft</item>
+      //  <item>CamRight</item>
+       // <item>CamStop</item>
+
+        SharedPreferences.Editor editor = prefs.edit();
+        if (list_preference_C1.equals("")) {
+            editor.putString("list_preference_C1", "ZoomInContinue");
+            editor.commit();
+        }
+        if (list_preference_C2.equals("")) {
+            editor.putString("list_preference_C2", "ZoomOutContinue");
+            editor.commit();
+        }
+        if (list_preference_C1_C2_release.equals("")) {
+            editor.putString("list_preference_C1_C2_release", "ZoomStop");
+            editor.commit();
+        }
+        if (list_preference_5d_left.equals("")) {
+            editor.putString("list_preference_5d_left", "CamLeft");
+            editor.commit();
+        }
+        if (list_preference_5d_right.equals("")) {
+            editor.putString("list_preference_5d_right", "CamRight");
+            editor.commit();
+        }
+        if (list_preference_5d_up.equals("")) {
+            editor.putString("list_preference_5d_up", "CamUp");
+            editor.commit();
+        }
+        if (list_preference_5d_down.equals("")) {
+            editor.putString("list_preference_5d_down", "CamDown");
+            editor.commit();
+        }
+        if (list_preference_5d_middle.equals("")) {
+            editor.putString("list_preference_5d_middle", "CamStop");
+            editor.commit();
+        }
 
         sIntent = new Intent(this, DjiAppMainServiceImpl.class);
         sConn = new ServiceConnection() {

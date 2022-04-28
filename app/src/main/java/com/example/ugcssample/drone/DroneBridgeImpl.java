@@ -445,11 +445,12 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 // ToastUtils.setResultToToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
                 String list_preference_C1 = prefs.getString("list_preference_C1", "");
                 String list_preference_C2 = prefs.getString("list_preference_C2", "");
+                String list_preference_C1_C2_release = prefs.getString("list_preference_C1_C2_release", "");
                 String list_preference_5d_left = prefs.getString("list_preference_5d_left", "");
                 String list_preference_5d_right = prefs.getString("list_preference_5d_right", "");
                 String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
                 String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
-                String list_preference_5d_push = prefs.getString("list_preference_5d_push", "");
+                String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
                 if (btnC1 != null && btnC1.isClicked()) {
                     finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_IN, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
                         if (djiError != null) {

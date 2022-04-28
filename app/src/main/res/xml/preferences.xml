@@ -24,6 +24,13 @@
             android:defaultValue="1"
             android:entries="@array/preferences_array"
             android:entryValues="@array/preferences_array"
+            android:key="list_preference_C1_C2_release"
+            android:title="@string/list_pref_C1_C2_title" />
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/preferences_array"
+            android:entryValues="@array/preferences_array"
             android:key="list_preference_5d_left"
             android:title="@string/list_pref_5d_left_title" />
 
@@ -52,8 +59,8 @@
             android:defaultValue="1"
             android:entries="@array/preferences_array"
             android:entryValues="@array/preferences_array"
-            android:key="list_preference_5d_push"
-            android:title="@string/list_pref_5d_push_title" />
+            android:key="list_preference_5d_release"
+            android:title="@string/list_pref_5d_middle_title" />
 
     </PreferenceCategory>
 </PreferenceScreen>
