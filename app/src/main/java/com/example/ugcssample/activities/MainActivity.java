@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection sConn;
     private Button btnSimulator;
     private Button bindRc;
+    private Button wideButton;
+    private Button zoomButton;
     private Button bindCustomMedia;
     private Button bindWidgets;
     private FPVWidget fpvWidget;
@@ -66,10 +68,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
 
             if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
-                btnSimulator.setEnabled(true);
+               // btnSimulator.setEnabled(true);
                 bindRc.setEnabled(true);
-                bindCustomMedia.setEnabled(true);
+              //  bindCustomMedia.setEnabled(true);
                 bindWidgets.setEnabled(true);
+                wideButton.setEnabled(true);
+                zoomButton.setEnabled(true);
                // primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
             }
         }
@@ -93,18 +97,30 @@ public class MainActivity extends AppCompatActivity {
         };
 
      //   primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
-        btnSimulator = (Button) findViewById(R.id.btn_simulator);
-        btnSimulator.setOnClickListener(v -> {
-            appMainService.startSimulator();
+      //  btnSimulator = (Button) findViewById(R.id.btn_simulator);
+      //  btnSimulator.setOnClickListener(v -> {
+      //      appMainService.startSimulator();
+      //  });
+
+        wideButton = (Button) findViewById(R.id.wide);
+        wideButton.setOnClickListener(v -> {
+            appMainService.wide();
         });
+
+
+        zoomButton = (Button) findViewById(R.id.zoom);
+        zoomButton.setOnClickListener(v -> {
+            appMainService.zoom();
+        });
+
         bindRc = (Button) findViewById(R.id.btn_rc);
         bindRc.setOnClickListener(v -> {
             appMainService.bindRC();
         });
-        bindCustomMedia = (Button) findViewById(R.id.btn_custom_media);
-        bindCustomMedia.setOnClickListener(v -> {
-            appMainService.setMedia("Custom media info");
-        });
+       // bindCustomMedia = (Button) findViewById(R.id.btn_custom_media);
+       // bindCustomMedia.setOnClickListener(v -> {
+       //     appMainService.setMedia("Custom media info");
+       // });
 
         fpvWidget = (FPVWidget)findViewById(R.id.fpv_custom_widget);
         fpvOverlayWidget = (FPVOverlayWidget) findViewById(R.id.fpv_overlay_widget);
@@ -113,11 +129,11 @@ public class MainActivity extends AppCompatActivity {
         bindWidgets = (Button) findViewById(R.id.switch_button_primary);
         bindWidgets.setOnClickListener(v -> {
             if (!switched) {
-                fpvWidget.setVideoSource(FPVWidget.VideoSource.PRIMARY);
-                secondaryFpvWidget.setVideoSource(FPVWidget.VideoSource.SECONDARY);
-            } else {
                 fpvWidget.setVideoSource(FPVWidget.VideoSource.SECONDARY);
                 secondaryFpvWidget.setVideoSource(FPVWidget.VideoSource.PRIMARY);
+            } else {
+                fpvWidget.setVideoSource(FPVWidget.VideoSource.PRIMARY);
+                secondaryFpvWidget.setVideoSource(FPVWidget.VideoSource.SECONDARY);
             }
             switched = !switched;
         });

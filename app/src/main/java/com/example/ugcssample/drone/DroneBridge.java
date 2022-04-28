@@ -24,5 +24,9 @@ public interface DroneBridge {
 
     void remoteController();
 
+    void zoomCamera();
+
+    void wideCamera();
+
     void remoteControllerBind();
 }

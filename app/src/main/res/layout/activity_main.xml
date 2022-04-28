@@ -33,7 +33,7 @@
             android:id="@+id/fpv_overlay_widget"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            custom:overlayVideoSource="primary"/>
+            custom:overlayVideoSource="primary" />
         <FrameLayout
             android:layout_width="160dp"
             android:layout_height="90dp"
@@ -57,13 +57,13 @@
         android:elevation="1000dp"
         android:baselineAligned="false">
 
-        <Button
+        <!--<Button
             android:id="@+id/btn_simulator"
             android:text="Start Simulator"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp" />
+            android:layout_width="130dp" />-->
         <Button
             android:id="@+id/btn_rc"
             android:text="Bind RC"
@@ -71,16 +71,32 @@
             android:enabled="false"
             android:layout_marginEnd="5dp"
             android:layout_width="130dp"/>
-        <Button
+        <!--<Button
             android:id="@+id/btn_custom_media"
             android:text="Custom Media"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"
-            android:layout_width="130dp"/>
+            android:layout_width="130dp"/>-->
         <Button
             android:id="@+id/switch_button_primary"
             android:text="Switch widgets"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
+
+        <Button
+            android:id="@+id/zoom"
+            android:text="ZOOM"
+            android:layout_height="70dp"
+            android:enabled="false"
+            android:layout_marginEnd="5dp"
+            android:layout_width="130dp"/>
+
+        <Button
+            android:id="@+id/wide"
+            android:text="wide"
             android:layout_height="70dp"
             android:enabled="false"
             android:layout_marginEnd="5dp"

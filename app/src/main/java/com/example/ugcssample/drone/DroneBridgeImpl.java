@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import dji.common.camera.CameraVideoStreamSource;
 import dji.common.camera.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
@@ -400,6 +401,11 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 return;
             }
             Camera camera = cameraList.get(0);
+            camera.setCameraVideoStreamSource(CameraVideoStreamSource.ZOOM, djiError -> {
+                if (djiError != null) {
+                    Timber.i(djiError.getDescription());
+                }
+            });
             Lens activeLens = null;
             if (camera.isMultiLensCameraSupported()) {
                 List<Lens> lensesList = camera.getLenses();
@@ -436,7 +442,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 HardwareState.FiveDButton btn5D = rcHardwareState.getFiveDButton();
                 HardwareState.FiveDButtonDirection horizontalDirection = btn5D.getHorizontalDirection();
                 HardwareState.FiveDButtonDirection verticalDirection = btn5D.getVerticalDirection();
-               // ToastUtils.setResultToToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
+                // ToastUtils.setResultToToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
                 String list_preference_C1 = prefs.getString("list_preference_C1", "");
                 String list_preference_C2 = prefs.getString("list_preference_C2", "");
                 String list_preference_5d_left = prefs.getString("list_preference_5d_left", "");
@@ -451,13 +457,6 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                         }
                     });
                 }
-                if (btnC1 != null && !btnC1.isClicked()) {
-                    finalActiveLens.stopContinuousOpticalZoom(djiError -> {
-                        if (djiError != null) {
-                            Timber.i(djiError.getDescription());
-                        }
-                    });
-                }
                 if (btnC2 != null && btnC2.isClicked()) {
                     finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_OUT, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
                         if (djiError != null) {
@@ -465,7 +464,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                         }
                     });
                 }
-                if (btnC2 != null && !btnC2.isClicked()) {
+                if (btnC2 != null && !btnC2.isClicked() && btnC1 != null && !btnC1.isClicked()) {
                     finalActiveLens.stopContinuousOpticalZoom(djiError -> {
                         if (djiError != null) {
                             Timber.i(djiError.getDescription());
@@ -492,6 +491,36 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         });
 
 
+    }
+
+    @Override
+    public void zoomCamera() {
+        if (cameraList.size() == 0) {
+            Timber.i("cameraList is null");
+            ToastUtils.setResultToToast("cameraList is null");
+            return;
+        }
+        Camera camera = cameraList.get(0);
+        camera.setCameraVideoStreamSource(CameraVideoStreamSource.ZOOM, djiError -> {
+            if (djiError != null) {
+                Timber.i(djiError.getDescription());
+            }
+        });
+    }
+
+    @Override
+    public void wideCamera() {
+        if (cameraList.size() == 0) {
+            Timber.i("cameraList is null");
+            ToastUtils.setResultToToast("cameraList is null");
+            return;
+        }
+        Camera camera = cameraList.get(0);
+        camera.setCameraVideoStreamSource(CameraVideoStreamSource.WIDE, djiError -> {
+            if (djiError != null) {
+                Timber.i(djiError.getDescription());
+            }
+        });
     }
 
     private void proceedClick() {
@@ -540,7 +569,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 }
             });
             remoteController.customizeButton(ProfessionalRC.CustomizableButton.C1, ProfessionalRC.ButtonAction.CameraZoom, djiError -> {
-              //  ToastUtils.showToast("C1 ZOOM binded");
+                //  ToastUtils.showToast("C1 ZOOM binded");
             });
             remoteController.customizeButton(ProfessionalRC.CustomizableButton.FIVE_D_UP, ProfessionalRC.ButtonAction.GIMBAL_YAW_RECENTER, djiError -> {
                 //ToastUtils.showToast("FIVE_D_UP ZOOM binded");

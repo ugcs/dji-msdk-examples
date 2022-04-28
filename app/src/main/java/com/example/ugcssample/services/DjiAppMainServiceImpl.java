@@ -61,6 +61,16 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     }
 
     @Override
+    public void zoom() {
+        droneBridge.zoomCamera();
+    }
+
+    @Override
+    public void wide() {
+        droneBridge.wideCamera();
+    }
+
+    @Override
     public void setMedia(String information) {
         droneBridge.setMediaFileCustomInformation(information);
     }
