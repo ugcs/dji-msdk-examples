@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     }
     private Intent sIntent;
     private ServiceConnection sConn;
-    private Button btnSimulator, btnTakeCapture;
+   // private Button btnSimulator;
+    private Button btnTakeCapture;
     private EditText editTextXmpTag;
     protected DjiAppMainService appMainService;
     public static final int REQUEST_PERMISSION_CODE = 2358;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
 
             if (DroneBridgeImpl.ON_DRONE_CONNECTED.equals(action)) {
-                btnSimulator.setEnabled(true);
+               // btnSimulator.setEnabled(true);
                 btnTakeCapture.setEnabled(true);
                 editTextXmpTag.setEnabled(true);
                 primaryVideoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
@@ -81,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         primaryVideoFeedView = (VideoViewFragment) findViewById(R.id.video_view_primary_video_feed);
-        btnSimulator = (Button) findViewById(R.id.btn_simulator);
-        btnSimulator.setOnClickListener(v -> appMainService.startSimulator());
+      //  btnSimulator = (Button) findViewById(R.id.btn_simulator);
+     // btnSimulator.setOnClickListener(v -> appMainService.startSimulator());
         btnTakeCapture = (Button) findViewById(R.id.btn_take_capture);
         editTextXmpTag = (EditText) findViewById(R.id.edit_text_xmp_tag);
         btnTakeCapture.setOnClickListener(v -> {

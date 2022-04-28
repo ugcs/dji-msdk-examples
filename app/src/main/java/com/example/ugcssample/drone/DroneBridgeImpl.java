@@ -15,6 +15,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.ugcssample.utils.PermissionCheckResult;
 import com.example.ugcssample.utils.ToastUtils;
 
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -24,10 +25,13 @@ import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
 import dji.common.model.LocationCoordinate2D;
 import dji.common.util.CommonCallbacks;
+import dji.keysdk.CameraKey;
+import dji.keysdk.DJIKey;
 import dji.keysdk.FlightControllerKey;
 import dji.keysdk.KeyManager;
 import dji.keysdk.ProductKey;
 import dji.keysdk.callback.KeyListener;
+import dji.keysdk.callback.SetCallback;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.base.DJIDiagnostics;
@@ -207,6 +211,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 droneInitFuture = WORKER.schedule(() ->
                         initDrone(s), 2, TimeUnit.SECONDS);
             }
+
             @Override
             public void onFailure(DJIError djiError) {
                 ToastUtils.setResultToToast(String.format("getSerialNumber method - error: %s", djiError.getDescription()));
@@ -386,7 +391,67 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
     public void takeCapture(Handler handler, String xmpTag) {
         final Camera camera = DJISDKManager.getInstance().getProduct().getCamera();
         if (camera != null) {
-            camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
+            KeyManager km = KeyManager.getInstance();
+
+            DJIKey CUSTOM_INFORMATION_KEY = CameraKey.create(CameraKey.CUSTOM_INFORMATION);
+
+            km.setValue(CUSTOM_INFORMATION_KEY, xmpTag, new SetCallback() {
+                @Override
+                public void onSuccess() {
+                    camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
+                    if (djiError != null) {
+                        ToastUtils.setResultToToast(djiError.getDescription());
+                        return;
+                    }
+                    camera.setShootPhotoMode(SettingsDefinitions.ShootPhotoMode.SINGLE, djiError1 -> {
+                        if (djiError1 != null) {
+                            ToastUtils.setResultToToast(djiError1.getDescription());
+                            return;
+                        }
+                        camera.startShootPhoto(djiError2 -> {
+                            if (djiError2 == null) {
+                                ToastUtils.setResultToToast("Take photo: success");
+                            } else {
+                                ToastUtils.setResultToToast(djiError2.getDescription());
+                            }
+                        });
+                    });
+                });
+                }
+
+                @Override
+                public void onFailure(@NonNull DJIError djiError) {
+                    ToastUtils.setResultToToast("Set CUSTOM_INFORMATION_KEY - Failure - " + djiError.getDescription());
+                }
+            });
+            /*
+            camera.setMediaFileCustomInformation(xmpTag, djiErrorMedia -> {
+                if (djiErrorMedia != null) {
+                    ToastUtils.setResultToToast(djiErrorMedia.getDescription());
+                    return;
+                }
+                camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
+                    if (djiError != null) {
+                        ToastUtils.setResultToToast(djiError.getDescription());
+                        return;
+                    }
+                    camera.setShootPhotoMode(SettingsDefinitions.ShootPhotoMode.SINGLE, djiError1 -> {
+                        if (djiError1 != null) {
+                            ToastUtils.setResultToToast(djiError1.getDescription());
+                            return;
+                        }
+                        camera.startShootPhoto(djiError2 -> {
+                            if (djiError2 == null) {
+                                ToastUtils.setResultToToast("Take photo: success");
+                            } else {
+                                ToastUtils.setResultToToast(djiError2.getDescription());
+                            }
+                        });
+                    });
+                });
+            });
+            */
+          /*  camera.startShootPhoto(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
                 if (null == djiError) {
                     handler.postDelayed(() -> camera.startShootPhoto(djiError1 -> {
                         if (djiError1 == null) {
@@ -400,6 +465,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                     }), 2000);
                 }
             });
+            */
         }
     }
 
