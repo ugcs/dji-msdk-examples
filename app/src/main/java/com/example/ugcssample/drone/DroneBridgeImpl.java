@@ -451,47 +451,110 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
                 String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
                 String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
+                // <item>ZoomInContinue</item>
+                // <item>ZoomOutContinue</item>
+                //  <item>ZoomStop</item>
+                //  <item>CamUp</item>
+                //  <item>CamDown</item>
+                //  <item>CamLeft</item>
+                //  <item>CamRight</item>
+                // <item>CamStop</item>
                 if (btnC1 != null && btnC1.isClicked()) {
-                    finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_IN, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
-                        if (djiError != null) {
-                            Timber.i(djiError.getDescription());
-                        }
-                    });
+                    executeAction(list_preference_C1, finalActiveLens);
                 }
                 if (btnC2 != null && btnC2.isClicked()) {
-                    finalActiveLens.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_OUT, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
-                        if (djiError != null) {
-                            Timber.i(djiError.getDescription());
-                        }
-                    });
+                    executeAction(list_preference_C2, finalActiveLens);
                 }
                 if (btnC2 != null && !btnC2.isClicked() && btnC1 != null && !btnC1.isClicked()) {
-                    finalActiveLens.stopContinuousOpticalZoom(djiError -> {
-                        if (djiError != null) {
-                            Timber.i(djiError.getDescription());
-                        }
-                    });
+                    executeAction(list_preference_C1_C2_release, finalActiveLens);
                 }
                 if (horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.startRotation(0, -0.2f);
+                    executeAction(list_preference_5d_left, finalActiveLens);
                 }
                 if (horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
-                    gimbalController.startRotation(0, 0.2f);
+                    executeAction(list_preference_5d_right, finalActiveLens);
                 }
                 if (verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.startRotation(-0.2f, 0);
+                    executeAction(list_preference_5d_down, finalActiveLens);
                 }
                 if (verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
-                    gimbalController.startRotation(0.2f, 0);
+                    executeAction(list_preference_5d_up, finalActiveLens);
                 }
                 if (verticalDirection == HardwareState.FiveDButtonDirection.MIDDLE && horizontalDirection == HardwareState.FiveDButtonDirection.MIDDLE) {
-                    gimbalController.stopRotation();
+                    executeAction(list_preference_5d_middle, finalActiveLens);
                 }
             });
             ToastUtils.setResultToToast("RC Binded");
         });
+    }
 
+    private void executeAction(String action, Lens l) {
+        switch (action) {
+            case "ZoomInContinue":
+                cameraZoomIn(l);
+                break;
+            case "ZoomOutContinue":
+                cameraZoomOut(l);
+                break;
+            case "ZoomStop":
+                cameraZoomStop(l);
+                break;
+            case "CamUp":
+                gimbalUp();
+                break;
+            case "CamDown":
+                gimbalDown();
+                break;
+            case "CamLeft":
+                gimbalLeft();
+                break;
+            case "CamRight":
+                gimbalRight();
+                break;
+            case "CamStop":
+                gimbalStop();
+                break;
+        }
+    }
 
+    private void cameraZoomIn(Lens l) {
+        l.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_IN, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
+            if (djiError != null) {
+                Timber.i(djiError.getDescription());
+            }
+        });
+    }
+
+    private void cameraZoomOut(Lens l) {
+        l.startContinuousOpticalZoom(SettingsDefinitions.ZoomDirection.ZOOM_OUT, SettingsDefinitions.ZoomSpeed.NORMAL, djiError -> {
+            if (djiError != null) {
+                Timber.i(djiError.getDescription());
+            }
+        });
+    }
+
+    private void cameraZoomStop(Lens l) {
+        l.stopContinuousOpticalZoom(djiError -> {
+            if (djiError != null) {
+                Timber.i(djiError.getDescription());
+            }
+        });
+    }
+
+    private void gimbalStop() {
+        gimbalController.stopRotation();
+    }
+    private void gimbalLeft() {
+        gimbalController.startRotation(0, -0.2f);
+    }
+    private void gimbalRight() {
+        gimbalController.startRotation(0, 0.2f);
+    }
+    private void gimbalUp() {
+        gimbalController.startRotation(0.2f, 0);
+    }
+    private void gimbalDown() {
+        gimbalController.startRotation(-0.2f, 0);
     }
 
     @Override
