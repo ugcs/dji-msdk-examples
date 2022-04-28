@@ -391,12 +391,12 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             Gimbal gimbal = aircraft.getGimbal();
             if (cameraList.size() == 0) {
                 Timber.i("cameraList is null");
-                ToastUtils.showToast("cameraList is null");
+                ToastUtils.setResultToToast("cameraList is null");
                 return;
             }
             if (gimbal == null) {
                 Timber.i("gimbal is null");
-                ToastUtils.showToast("gimbal is null");
+                ToastUtils.setResultToToast("gimbal is null");
                 return;
             }
             Camera camera = cameraList.get(0);
@@ -406,7 +406,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 if (lensesList != null) {
                     for (Lens lens :
                             lensesList) {
-                        if (lens.isOpticalZoomSupported()) {
+                        if (lens.isHybridZoomSupported()) {
                             activeLens = lens;
                             break;
                         }
@@ -417,14 +417,14 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             } else {
 
                 Timber.i("not M300");
-                ToastUtils.showToast("not M300");
+                ToastUtils.setResultToToast("not M300");
                 //Lens singleLens = new DjiLens(djiCamera, context);
                 //lenses.put(singleLens.getId(), singleLens);
                 //singleLens.addOnInitialisedListener(lensInitialisationListener);
             }
             if (activeLens == null) {
                 Timber.i("no zoom lens support");
-                ToastUtils.showToast("no zoom lens support");
+                ToastUtils.setResultToToast("no zoom lens support");
                 return;
             }
             RemoteController remoteController = aircraft.getRemoteController();
@@ -436,7 +436,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 HardwareState.FiveDButton btn5D = rcHardwareState.getFiveDButton();
                 HardwareState.FiveDButtonDirection horizontalDirection = btn5D.getHorizontalDirection();
                 HardwareState.FiveDButtonDirection verticalDirection = btn5D.getVerticalDirection();
-               // ToastUtils.showToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
+               // ToastUtils.setResultToToast("C1 " + btnC1.isClicked() + " horizontalDirection " + horizontalDirection.toString());
                 String list_preference_C1 = prefs.getString("list_preference_C1", "");
                 String list_preference_C2 = prefs.getString("list_preference_C2", "");
                 String list_preference_5d_left = prefs.getString("list_preference_5d_left", "");
@@ -472,32 +472,23 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                         }
                     });
                 }
-                if (btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.startRotation(-1, 0);
+                if (horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.startRotation(0, -0.2f);
                 }
-                if (!btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.stopRotation();
+                if (horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.startRotation(0, 0.2f);
                 }
-                if (btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
-                    gimbalController.startRotation(1, 0);
+                if (verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
+                    gimbalController.startRotation(-0.2f, 0);
                 }
-                if (!btn5D.isClicked() && horizontalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
-                    gimbalController.stopRotation();
+                if (verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                    gimbalController.startRotation(0.2f, 0);
                 }
-                if (btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.startRotation(0, -1);
-                }
-                if (!btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.NEGATIVE) {
-                    gimbalController.stopRotation();
-                }
-                if (btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
-                    gimbalController.startRotation(0, 1);
-                }
-                if (!btn5D.isClicked() && verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
+                if (verticalDirection == HardwareState.FiveDButtonDirection.MIDDLE && horizontalDirection == HardwareState.FiveDButtonDirection.MIDDLE) {
                     gimbalController.stopRotation();
                 }
             });
-            ToastUtils.showToast("RC Binded");
+            ToastUtils.setResultToToast("RC Binded");
         });
 
 
