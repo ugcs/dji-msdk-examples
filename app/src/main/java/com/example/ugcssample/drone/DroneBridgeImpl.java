@@ -15,7 +15,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.ugcssample.utils.PermissionCheckResult;
 import com.example.ugcssample.utils.ToastUtils;
 
-import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -389,23 +388,20 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
 
     @Override
     public void takeCapture(Handler handler, String xmpTag) {
+
         final Camera camera = DJISDKManager.getInstance().getProduct().getCamera();
         if (camera != null) {
             KeyManager km = KeyManager.getInstance();
 
+            Timber.i("setMediaFileCustomInformation %s", xmpTag);
             DJIKey CUSTOM_INFORMATION_KEY = CameraKey.create(CameraKey.CUSTOM_INFORMATION);
 
             km.setValue(CUSTOM_INFORMATION_KEY, xmpTag, new SetCallback() {
                 @Override
                 public void onSuccess() {
                     camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
-                    if (djiError != null) {
-                        ToastUtils.setResultToToast(djiError.getDescription());
-                        return;
-                    }
-                    camera.setShootPhotoMode(SettingsDefinitions.ShootPhotoMode.SINGLE, djiError1 -> {
-                        if (djiError1 != null) {
-                            ToastUtils.setResultToToast(djiError1.getDescription());
+                        if (djiError != null) {
+                            ToastUtils.setResultToToast(djiError.getDescription());
                             return;
                         }
                         camera.startShootPhoto(djiError2 -> {
@@ -416,56 +412,13 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                             }
                         });
                     });
-                });
                 }
 
                 @Override
                 public void onFailure(@NonNull DJIError djiError) {
-                    ToastUtils.setResultToToast("Set CUSTOM_INFORMATION_KEY - Failure - " + djiError.getDescription());
+                    ToastUtils.showToast("Set CUSTOM_INFORMATION_KEY - Failure - " + djiError.getDescription());
                 }
             });
-            /*
-            camera.setMediaFileCustomInformation(xmpTag, djiErrorMedia -> {
-                if (djiErrorMedia != null) {
-                    ToastUtils.setResultToToast(djiErrorMedia.getDescription());
-                    return;
-                }
-                camera.setMode(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
-                    if (djiError != null) {
-                        ToastUtils.setResultToToast(djiError.getDescription());
-                        return;
-                    }
-                    camera.setShootPhotoMode(SettingsDefinitions.ShootPhotoMode.SINGLE, djiError1 -> {
-                        if (djiError1 != null) {
-                            ToastUtils.setResultToToast(djiError1.getDescription());
-                            return;
-                        }
-                        camera.startShootPhoto(djiError2 -> {
-                            if (djiError2 == null) {
-                                ToastUtils.setResultToToast("Take photo: success");
-                            } else {
-                                ToastUtils.setResultToToast(djiError2.getDescription());
-                            }
-                        });
-                    });
-                });
-            });
-            */
-          /*  camera.startShootPhoto(SettingsDefinitions.CameraMode.SHOOT_PHOTO, djiError -> {
-                if (null == djiError) {
-                    handler.postDelayed(() -> camera.startShootPhoto(djiError1 -> {
-                        if (djiError1 == null) {
-                            camera.setMediaFileCustomInformation(xmpTag, djiError2 -> {
-                                ToastUtils.setResultToToast(djiError2.getDescription());
-                            });
-                            ToastUtils.setResultToToast("Take photo: success");
-                        } else {
-                            ToastUtils.setResultToToast(djiError1.getDescription());
-                        }
-                    }), 2000);
-                }
-            });
-            */
         }
     }
 
