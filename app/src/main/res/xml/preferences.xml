@@ -59,7 +59,7 @@
             android:defaultValue="1"
             android:entries="@array/preferences_array"
             android:entryValues="@array/preferences_array"
-            android:key="list_preference_5d_release"
+            android:key="list_preference_5d_middle"
             android:title="@string/list_pref_5d_middle_title" />
 
     </PreferenceCategory>
