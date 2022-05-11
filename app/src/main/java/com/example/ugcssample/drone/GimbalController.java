@@ -22,7 +22,7 @@ public interface GimbalController {
      */
     void stopRotation();
 
-    void reset(GimbalControllerError result);
+    void reset();
 
     void setFPVMode(GimbalControllerError result);
 

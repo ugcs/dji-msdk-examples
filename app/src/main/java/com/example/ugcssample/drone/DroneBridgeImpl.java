@@ -108,9 +108,10 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             ToastUtils.setResultToToast("DJISDKManager -> registerApp..");
             Timber.i("DJISDKManager -> SDK VERSION = %s", DJISDKManager.getInstance().getSDKVersion());
             if (DJISDKManager.getInstance().hasSDKRegistered()) {
-                //ToastUtils.setResultToToast("DJISDKManager -> already registered");
-                //Timber.i("DJISDKManager hasSDKRegistered.");
-                //return;
+                //ToastUtils.setResultToToast("DJISDKManager -> `already registered");
+              //  Timber.i("DJISDKManager hasSDKRegistered.");
+                initDrone(null);
+                return;
             }
             permissionCheckResult = null;
             DJISDKManager.getInstance().registerApp(context, new DJISDKManager.SDKManagerCallback() {
@@ -451,6 +452,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
                 String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
                 String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
+                String list_preference_5d_push = prefs.getString("list_preference_5d_push", "");
                 // <item>ZoomInContinue</item>
                 // <item>ZoomOutContinue</item>
                 //  <item>ZoomStop</item>
@@ -480,7 +482,12 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 if (verticalDirection == HardwareState.FiveDButtonDirection.POSITIVE) {
                     executeAction(list_preference_5d_up, finalActiveLens);
                 }
-                if (verticalDirection == HardwareState.FiveDButtonDirection.MIDDLE && horizontalDirection == HardwareState.FiveDButtonDirection.MIDDLE) {
+                if (btn5D.isClicked()) {
+                    executeAction(list_preference_5d_push, finalActiveLens);
+                }
+                if (verticalDirection == HardwareState.FiveDButtonDirection.MIDDLE
+                        && horizontalDirection == HardwareState.FiveDButtonDirection.MIDDLE
+                        && !btn5D.isClicked()) {
                     executeAction(list_preference_5d_middle, finalActiveLens);
                 }
             });
@@ -514,6 +521,9 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             case "CamStop":
                 gimbalStop();
                 break;
+            case "CamResetToMiddle":
+                gimbalReset();
+                break;
         }
     }
 
@@ -541,6 +551,9 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
         });
     }
 
+    private void gimbalReset() {
+        gimbalController.reset();
+    }
     private void gimbalStop() {
         gimbalController.stopRotation();
     }

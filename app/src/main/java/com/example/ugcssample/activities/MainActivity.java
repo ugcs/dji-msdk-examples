@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         String list_preference_5d_right = prefs.getString("list_preference_5d_right", "");
         String list_preference_5d_up = prefs.getString("list_preference_5d_up", "");
         String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
+        String list_preference_5d_push = prefs.getString("list_preference_5d_push", "");
         String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
 
        // <item>ZoomInContinue</item>
@@ -136,6 +137,10 @@ public class MainActivity extends AppCompatActivity {
         }
         if (list_preference_5d_down.equals("")) {
             editor.putString("list_preference_5d_down", "CamDown");
+            editor.commit();
+        }
+        if (list_preference_5d_push.equals("")) {
+            editor.putString("list_preference_5d_push", "CamResetToMiddle");
             editor.commit();
         }
         if (list_preference_5d_middle.equals("")) {

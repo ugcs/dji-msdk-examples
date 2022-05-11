@@ -16,7 +16,8 @@
     <string name="list_pref_5d_right_title">5d right</string>
     <string name="list_pref_5d_up_title">5d up</string>
     <string name="list_pref_5d_down_title">5d down</string>
-    <string name="list_pref_5d_middle_title">5d middle</string>
+    <string name="list_pref_5d_push_title">5d push</string>
+    <string name="list_pref_5d_middle_title">5d middle and 5d not pushed</string>
 
     <string-array name="preferences_array">
         <item>ZoomInContinue</item>
@@ -26,6 +27,7 @@
         <item>CamDown</item>
         <item>CamLeft</item>
         <item>CamRight</item>
+        <item>CamResetToMiddle</item>
         <item>CamStop</item>
     </string-array>
 </resources>

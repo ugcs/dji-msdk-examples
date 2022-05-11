@@ -64,7 +64,7 @@ public class GimbalControllerDjiImpl implements GimbalController {
     }
 
     @Override
-    public void reset(GimbalControllerError result) {
+    public void reset() {
         final Aircraft aircraft = droneBridge.getAircraftInstance();
         if (aircraft == null) {
             Timber.w("vehicle is disconnected already");
@@ -76,10 +76,10 @@ public class GimbalControllerDjiImpl implements GimbalController {
             return;
         }
         gimbal.reset(Axis.YAW_AND_PITCH, ResetDirection.CENTER, djiError -> {
-            if (djiError != null) {
-                result.OnResult(djiError.getErrorCode(), djiError.getDescription());
+            if (djiError == null) {
+                Timber.i("reset success");
             } else {
-                result.OnResult(0, "");
+                Timber.i(djiError.getDescription());
             }
         });
     }
