@@ -524,6 +524,11 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
             case "CamResetToMiddle":
                 gimbalReset();
                 break;
+            case "Unbind":
+                //do nothing
+                break;
+            default:
+                break;
         }
     }
 

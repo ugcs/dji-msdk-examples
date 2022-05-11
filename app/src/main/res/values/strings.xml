@@ -29,5 +29,6 @@
         <item>CamRight</item>
         <item>CamResetToMiddle</item>
         <item>CamStop</item>
+        <item>Unbind</item>
     </string-array>
 </resources>
