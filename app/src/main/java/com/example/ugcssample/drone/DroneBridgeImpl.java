@@ -453,7 +453,7 @@ public class DroneBridgeImpl extends DroneBridgeBase implements DroneBridge {
                 String list_preference_5d_down = prefs.getString("list_preference_5d_down", "");
                 String list_preference_5d_middle = prefs.getString("list_preference_5d_middle", "");
                 String list_preference_5d_push = prefs.getString("list_preference_5d_push", "");
-                Timber.i("%s %s %s %s %s %s %s %s %s",
+                Timber.i("bindings: %s %s %s %s %s %s %s %s %s",
                         list_preference_C1,
                         list_preference_C2,
                         list_preference_C1_C2_release,
