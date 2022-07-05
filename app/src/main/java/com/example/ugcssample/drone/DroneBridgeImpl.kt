@@ -514,7 +514,7 @@ class DroneBridgeImpl(val mContext : Context) : DroneBridgeBase(mContext), Drone
                     Timber.w(
                         " Perform %s Error %d: %s", key.toString(),
                         djiError.errorCode, djiError.description
-                            )
+                    )
                 }
             })
         }
@@ -545,6 +545,8 @@ class DroneBridgeImpl(val mContext : Context) : DroneBridgeBase(mContext), Drone
             }
         }
     }
+
+
     
     override fun uploadDemoMission() {
         if (!isInV2SDKMode) {
@@ -639,6 +641,20 @@ class DroneBridgeImpl(val mContext : Context) : DroneBridgeBase(mContext), Drone
         }
     
     }
+
+    override fun cancelLanding() {
+        aircraftInstance!!.flightController.cancelLanding{
+            if (it == null) {
+                Timber.i("Cancel landing - OK - error is null")
+                reportMission(2, "Success")
+            }
+            else {
+                Timber.e("Cancel landing - FAILED - djiError: %s", it.description)
+                reportMission(-1, "Error. " + it.errorCode)
+            }
+        }
+    }
+
     override fun startMission() {
         if (!isInV2SDKMode) {
             MissionControl.getInstance().waypointMissionOperator.startMission { djiError: DJIError? ->

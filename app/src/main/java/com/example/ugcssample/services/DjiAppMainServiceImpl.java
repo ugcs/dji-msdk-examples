@@ -69,6 +69,12 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
     public void land(boolean useKeyInterface) {
         droneBridge.land(useKeyInterface);
     }
+
+    @Override
+    public void cancelMission() {
+        droneBridge.cancelLanding();
+    }
+
     @Override
     public void uploadMission(File nativeRoute) {
         droneBridge.uploadMission(nativeRoute);

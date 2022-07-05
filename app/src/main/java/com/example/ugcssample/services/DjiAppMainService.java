@@ -12,4 +12,5 @@ public interface DjiAppMainService {
     
     void takeOff();
     void land(boolean useKeyInterface);
+    void cancelMission();
 }

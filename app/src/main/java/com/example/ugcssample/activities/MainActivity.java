@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnTakeOff;
     private Button btnLand;
     private Button btnLandDirect;
+    private Button btnManual;
     private Button btnNativeRouteMission;
     private TextView tvMissionDebug;
     protected DjiAppMainService appMainService;
@@ -139,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
             appMainService.startMission();
             btnLand.setEnabled(true);
             btnLandDirect.setEnabled(true);
+            btnManual.setEnabled(true);
         });
 
         btnTakeOff = findViewById(R.id.btn_takeoff);
@@ -146,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
             appMainService.takeOff();
             btnLand.setEnabled(true);
             btnLandDirect.setEnabled(true);
+            btnManual.setEnabled(true);
         });
 
         btnLand = findViewById(R.id.btn_land);
@@ -157,6 +160,11 @@ public class MainActivity extends AppCompatActivity {
         btnLandDirect.setOnClickListener(v -> {
             appMainService.land(true);
             btnTakeOff.setEnabled(false);
+        });
+        btnManual = findViewById(R.id.btn_manual);
+        btnManual.setOnClickListener(v -> {
+            appMainService.cancelMission();
+            btnTakeOff.setEnabled(true);
         });
         btnNativeRouteMission = findViewById(R.id.btn_native_route_mission);
         btnNativeRouteMission.setOnClickListener(v -> {
