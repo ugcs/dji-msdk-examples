@@ -85,6 +85,11 @@ public class DjiAppMainServiceImpl extends Service implements DjiAppMainService 
         droneBridge.takeOff();
     }
 
+    @Override
+    public void missionExecutionStatusChanged() {
+        droneBridge.missionExecutionStatusChanged();
+    }
+
     private DroneBridge newDroneBridge(Context context) {
         return new DroneBridgeImpl(context);
     }

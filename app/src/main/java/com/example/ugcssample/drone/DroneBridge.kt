@@ -19,4 +19,5 @@ interface DroneBridge {
     fun startMission()
     fun uploadMission(nativeRoute : File)
     fun cancelLanding()
+    fun missionExecutionStatusChanged()
 }

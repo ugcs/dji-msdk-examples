@@ -681,6 +681,11 @@ class DroneBridgeImpl(val mContext : Context) : DroneBridgeBase(mContext), Drone
             }
         }
     }
+
+    override fun missionExecutionStatusChanged() {
+        Timber.i("""FLIGHT MODE: ${aircraftInstance!!.flightController.state.flightMode}""")
+    }
+
     
     companion object {
         private const val BASE_LATITUDE = 56.8629537

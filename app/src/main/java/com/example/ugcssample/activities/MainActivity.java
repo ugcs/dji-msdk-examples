@@ -1,6 +1,5 @@
 package com.example.ugcssample.activities;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -8,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,12 +14,10 @@ import android.os.IBinder;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.ugcssample.R;
@@ -133,11 +129,12 @@ public class MainActivity extends AppCompatActivity {
         btnUploadMission.setOnClickListener(v -> {
             btnStartMission.setEnabled(false);
             appMainService.uploadMission();
+            appMainService.missionExecutionStatusChanged();
         });
-
         btnStartMission = findViewById(R.id.btn_start_mission);
         btnStartMission.setOnClickListener(v -> {
             appMainService.startMission();
+            appMainService.missionExecutionStatusChanged();
             btnLand.setEnabled(true);
             btnLandDirect.setEnabled(true);
             btnManual.setEnabled(true);
@@ -146,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
         btnTakeOff = findViewById(R.id.btn_takeoff);
         btnTakeOff.setOnClickListener(v -> {
             appMainService.takeOff();
+            appMainService.missionExecutionStatusChanged();
             btnLand.setEnabled(true);
             btnLandDirect.setEnabled(true);
             btnManual.setEnabled(true);
@@ -154,16 +152,19 @@ public class MainActivity extends AppCompatActivity {
         btnLand = findViewById(R.id.btn_land);
         btnLand.setOnClickListener(v -> {
             appMainService.land(true);
+            appMainService.missionExecutionStatusChanged();
             btnTakeOff.setEnabled(true);
         });
         btnLandDirect = findViewById(R.id.btn_land_2);
         btnLandDirect.setOnClickListener(v -> {
             appMainService.land(true);
+            appMainService.missionExecutionStatusChanged();
             btnTakeOff.setEnabled(false);
         });
         btnManual = findViewById(R.id.btn_manual);
         btnManual.setOnClickListener(v -> {
             appMainService.cancelMission();
+            appMainService.missionExecutionStatusChanged();
             btnTakeOff.setEnabled(true);
         });
         btnNativeRouteMission = findViewById(R.id.btn_native_route_mission);
