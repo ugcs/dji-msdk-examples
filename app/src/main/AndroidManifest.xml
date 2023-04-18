@@ -30,7 +30,7 @@
         </activity>
         <meta-data
             android:name="com.dji.sdk.API_KEY"
-            android:value="${DJI_SDK_KEY}" />
+            android:value="ec159311461d15b9e2eeea82" />
     </application>
 
 </manifest>

@@ -75,6 +75,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun printLog(message: String) {
-        findViewById<TextView>(R.id.log).append(message + "\n")
+        runOnUiThread {
+            findViewById<TextView>(R.id.log).append(message + "\n")
+        }
     }
 }
